@@ -1,0 +1,5 @@
+1. Tailwind Class to CSS = https://tailwind-to-css.vercel.app/
+2. Tailwind Doc = https://tailwindcss.com/docs/min-width
+3. Tailwind Components to copy = https://tailwindui.com/components/preview
+4. https://react.dev/reference/react-dom/components/input
+5.
