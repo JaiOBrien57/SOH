@@ -80,7 +80,7 @@ app.get("/api/availList", (req, res) => {
 
     prodResponse.Items.forEach(rowProd=>{
       var SKUProd = rowProd.SKU
-      var DealerProd = parseFloat(rowProd.PriceTier1)
+      var DealerProd = parseFloat(rowProd.PriceTier1.toFixed(2))
       
       if(Checker == false && SKU == SKUProd){
         availFinalFormat.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":AvailableCage,"AvailableRefurbCage":AvailableRefurbCage,"DealerPrice":DealerProd})

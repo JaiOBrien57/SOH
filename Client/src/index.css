@@ -71,8 +71,8 @@ body {
 }
 
 .headerText {
-  margin-bottom: 1rem;
-  color: #000000;
+  margin-bottom: 0.01rem;
+  color: #fcfcfc;
   font-size: 20px;
   line-height: 2.25rem;
   font-weight: 500;
@@ -80,8 +80,8 @@ body {
   line-height: 1;
   font-family: Arial, sans-serif;
   text-align: center;
-  padding-top: 20px;
-  padding-bottom: 1px;
+  padding-top: 13px;
+  padding-bottom: 8px;
 
   @media (min-width: 768px) {
     font-size: 10px;
