@@ -61,7 +61,13 @@ const onRowsSelectionHandler = (ids) => {
 //Render the HTML
   return (
     <div>
-    <div style={{ height: 815, width: '78%', float: "left"}} className='px-5 py-1 mt-3'>
+      <div style={{width: "75.94%", float: "left"}} className="bg-white ml-5 h-7 mt-3 rounded text-black border border-gray-300 text-center text-lg shadow-md">
+        Stock On Hand:
+      </div>
+      <div style={{width: "21%", float: "left"}} className="bg-white ml-5 h-7 mt-3 rounded text-black border border-gray-300 text-center text-lg shadow-md">
+        Selected:
+      </div>
+    <div style={{ height: 700, width: '78%', float: "left"}} className='px-5 py-1'>
       <DataGrid
         className='bg-white'
         sx={{
@@ -97,7 +103,7 @@ const onRowsSelectionHandler = (ids) => {
       />
     </div>
   
-    <div style={{ height: 815, width: '21%', float: 'left'}} className='px-0.1 py-1 mt-3'>
+    <div style={{ height: 400, width: '21%', float: 'left'}} className='px-0.1 py-1'>
       <DataGrid
         className='bg-white'
         sx={{
