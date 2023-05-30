@@ -1,5 +1,6 @@
 import { CSVLink, CSVDownload } from "react-csv";
-import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton  } from '@mui/x-data-grid';
+import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton } from '@mui/x-data-grid';
+import LinearProgress from '@mui/material/LinearProgress';
 import { useDemoData } from '@mui/x-data-grid-generator';
 import { Link } from "@mui/material";
 import React, { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ export default function DataTable() {
 const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":""}]);
 const [selectedDataTable, SetSelectedDataTable] = React.useState([{}]);
 const [chosenActionType, SetChosenActionType] = React.useState({ChosenActionType: ""});
+const [contentLoaded, SetContentLoaded] = React.useState(true)
 
   //Get the avail List
   useEffect(() => {
@@ -21,6 +23,7 @@ const [chosenActionType, SetChosenActionType] = React.useState({ChosenActionType
       const request = await fetch("/api/availList");
       const response = await request.json();
       setAvailData(response);
+      SetContentLoaded(false)
       console.log(response);
     }
     FetchAvail();
@@ -40,12 +43,12 @@ const currencyFormatter = (params) => {
 //Setup the columns for SOH Table
 const columns = [
   { field: 'id', headerName: 'ID', width: 40, headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false, disableExport: true},
-  { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
+  { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", renderCell:rowData=><Link href={`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`} target="_blank">{rowData.row.SKU}</Link>},
   { field: 'Name', headerName: 'Name 📱', width: 700, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
   { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
   { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
-  { field: 'IDDear', headerName: 'View In Dear', width: 105 ,align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true ,sortable: false,disableExport: true,renderCell:rowData=><button onClick={()=>window.open(`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`,'_blank', 'noopener,noreferrer')} class="flex w-full h-6 text-center justify-center rounded-md bg-blue-500 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">DEAR</button>},
+  { field: 'IDDear', headerName: 'Product ID', width: 105 ,align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true ,sortable: false,disableExport: true},
 ];
 
 //Setup the columns for Selected Table
@@ -69,6 +72,7 @@ const ActionTypeChange = (event) => {
   console.log("Action Type Changed")
 }
 
+//Menu For Main SOH Table
 function CustomToolbar() {
   return (
     <GridToolbarContainer>
@@ -79,6 +83,7 @@ function CustomToolbar() {
   );
 }
 
+//Menu For Selected Table
 function CustomToolbarSelect() {
   return (
     <GridToolbarContainer>
@@ -115,7 +120,9 @@ function CustomToolbarSelect() {
         }}
         slots={{
           toolbar: CustomToolbar,
+          loadingOverlay: LinearProgress,
         }}
+        loading={contentLoaded}
         rows={rows}
         columns={columns}
         initialState={{
@@ -125,6 +132,7 @@ function CustomToolbarSelect() {
           columns: {
             columnVisibilityModel: {
               id: false,
+              IDDear: false,
             },
           },
           aggregation: {
