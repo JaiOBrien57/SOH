@@ -6,11 +6,11 @@ function App() {
 
   //Main HTML
   return (
-    <div style={{height: '100vh'}} className="h-100% bg-gray-300">
-      <div className='headerText bg-white border border-bg-gray-300'>
+    <div style={{height: '100vh'}} className="h-100% bg-gray-200">
+      <div className='headerText bg-white border border-bg-gray-200'>
         <h1 className="text-black">RMG Tools</h1>
       </div>
-      <div className='bg-white border border-bg-gray-300 text-center'>
+      <div className='bg-white border border-bg-gray-200 text-center'>
         <h1 className="text-black">Stock On Hand</h1>
       </div>
       <TableComponentMUI/>
