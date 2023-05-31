@@ -1,5 +1,6 @@
 import { CSVLink, CSVDownload } from "react-csv";
-import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton } from '@mui/x-data-grid';
+import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams } from '@mui/x-data-grid';
+import clsx from 'clsx';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useDemoData } from '@mui/x-data-grid-generator';
 import { Link } from "@mui/material";
@@ -33,12 +34,18 @@ const [contentLoaded, SetContentLoaded] = React.useState(true)
 const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice}))
 
 //Get data for Selected Table
-const rowsSelected = selectedDataTable.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name}))
+const rowsSelected = selectedDataTable.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice}))
 
 //Format as currency
 const currencyFormatter = (params) => {
   return '$' + (params.value);
 };
+
+//Change Selected Table Price on Edit
+function setPriceSelected(params) {
+  const [SelectedPrice] = params.value.toString()
+  return { ...params.row, SelectedPrice };
+}
 
 //Setup the columns for SOH Table
 const columns = [
@@ -46,8 +53,8 @@ const columns = [
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", renderCell:rowData=><Link href={`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`} target="_blank">{rowData.row.SKU}</Link>},
   { field: 'Name', headerName: 'Name 📱', width: 700, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
   { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
-  { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
-  { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
+  { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
+  { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'IDDear', headerName: 'Product ID', width: 105 ,align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true ,sortable: false,disableExport: true},
 ];
 
@@ -56,6 +63,7 @@ const columnsSelected = [
   { field: 'id', headerName: '#', width: 40, headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false,disableExport: true},
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
   { field: 'Name', headerName: 'Name 📱', width: 600, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
+  { field: 'Price', headerName: 'Price', width: 100, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true},
 ];
 
 //Handle selected data
@@ -116,6 +124,14 @@ function CustomToolbarSelect() {
           borderColor: '#d1d5db',
           '& .MuiDataGrid-row:hover': {
             backgroundColor: '#f3f4f6',
+          },
+          '& .super-app.negative': {
+            color: '#dc2626',
+            fontWeight: '500',
+          },
+          '& .super-app.positive': {
+            color: '#16a34a',
+            fontWeight: '500',
           },
         }}
         slots={{
@@ -183,12 +199,14 @@ function CustomToolbarSelect() {
         }}
         rows={rowsSelected}
         columns={columnsSelected}
+        isCellEditable={(params) => params.row.Price}
         initialState={{
           pagination: {
             paginationModel: { page: 0, pageSize: 25 },
           },
           columns: {
             columnVisibilityModel: {
+              Name: false,
             },
           },
           aggregation: {
