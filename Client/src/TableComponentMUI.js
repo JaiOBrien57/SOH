@@ -1,5 +1,5 @@
 import { CSVLink, CSVDownload } from "react-csv";
-import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams } from '@mui/x-data-grid';
+import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams,GridCellEditStopReasons  } from '@mui/x-data-grid';
 import clsx from 'clsx';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useDemoData } from '@mui/x-data-grid-generator';
@@ -17,35 +17,47 @@ const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"
 const [selectedDataTable, SetSelectedDataTable] = React.useState([{}]);
 const [chosenActionType, SetChosenActionType] = React.useState({ChosenActionType: ""});
 const [contentLoaded, SetContentLoaded] = React.useState(true)
+const [mainTableRows, SetMainTableRows] = React.useState([{"id":""}])
+const [selectedTableRows, SetSelectedTableRows] = React.useState([{"id":""}])
 
-  //Get the avail List
-  useEffect(() => {
-    async function FetchAvail() {
-      const request = await fetch("/api/availList");
-      const response = await request.json();
-      setAvailData(response);
-      SetContentLoaded(false)
-      console.log(response);
-    }
-    FetchAvail();
-  }, []);
+//Get the avail List
+useEffect(() => {
+  async function FetchAvail() {
+    const request = await fetch("/api/availList");
+    const response = await request.json();
+    setAvailData(response);
+    SetContentLoaded(false)
+    console.log(response);
+  }
+  FetchAvail();
+}, []);
 
-//Get data for SOH table
-const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice}))
+//Set the rows state for the Main Table
+useEffect(() => {
+  function SetMainTableRowsData() {
+    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY}))
+    SetMainTableRows(rows)
+    console.log(rows)
+  }
+  SetMainTableRowsData();
+}, [availData]);
 
-//Get data for Selected Table
-const rowsSelected = selectedDataTable.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice}))
+
+//Set the rows state for the selected Table
+useEffect(() => {
+  function SetSelectedTableRowsData() {
+    const rows = selectedDataTable.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice}))
+    SetSelectedTableRows(rows)
+    console.log(rows)
+  }
+  SetSelectedTableRowsData();
+}, [selectedDataTable]);
+
 
 //Format as currency
 const currencyFormatter = (params) => {
   return '$' + (params.value);
 };
-
-//Change Selected Table Price on Edit
-function setPriceSelected(params) {
-  const [SelectedPrice] = params.value.toString()
-  return { ...params.row, SelectedPrice };
-}
 
 //Setup the columns for SOH Table
 const columns = [
@@ -56,6 +68,7 @@ const columns = [
   { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'IDDear', headerName: 'Product ID', width: 105 ,align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true ,sortable: false,disableExport: true},
+  { field: 'TotalQTY', headerName: 'TotalQTY', width: 40,type: 'number', headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false, disableExport: true},
 ];
 
 //Setup the columns for Selected Table
@@ -66,9 +79,29 @@ const columnsSelected = [
   { field: 'Price', headerName: 'Price', width: 100, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true},
 ];
 
+//Test update price in select table
+const handleCellEditChangePrice = (params, event) => {
+  const { id, field, value, api } = params;
+  const updatedRows = selectedTableRows.map((row) => {
+    if (row.id === id) {
+      return { ...params };
+    }
+    return row;
+  });
+  SetSelectedTableRows(updatedRows);
+  console.log(updatedRows)
+  return(params)
+};
+
+const handleRowUpdateErrorPrice = (params, error) => {
+  console.error('An error occurred while updating the row:', params);
+  return(params)
+};
+
+
 //Handle selected data
 const onRowsSelectionHandler = (ids) => {
-  const selectedRowsData = ids.map((id) => rows.find((row) => row.id === id));
+  const selectedRowsData = ids.map((id) => mainTableRows.find((row) => row.id === id));
   SetSelectedDataTable(selectedRowsData)
   console.log(selectedRowsData);
 };
@@ -100,6 +133,15 @@ function CustomToolbarSelect() {
     </GridToolbarContainer>
   );
 }
+
+//Hidden column filter fields from main table
+const hiddenFieldsMainTable = ['id', 'IDDear',"TotalQTY"];
+
+const getTogglableColumns = (columns) => {
+  return columns
+    .filter((column) => !hiddenFieldsMainTable.includes(column.field))
+    .map((column) => column.field);
+};
 
 
 //Render the HTML
@@ -138,8 +180,13 @@ function CustomToolbarSelect() {
           toolbar: CustomToolbar,
           loadingOverlay: LinearProgress,
         }}
+        slotProps={{
+          columnsPanel: {
+            getTogglableColumns,
+          },
+        }}
         loading={contentLoaded}
-        rows={rows}
+        rows={mainTableRows}
         columns={columns}
         initialState={{
           pagination: {
@@ -149,6 +196,7 @@ function CustomToolbarSelect() {
             columnVisibilityModel: {
               id: false,
               IDDear: false,
+              TotalQTY: false,
             },
           },
           aggregation: {
@@ -182,7 +230,6 @@ function CustomToolbarSelect() {
         Download CSV
       </button>
    
-   
     <div style={{ height: 655.35, width: '21%', float: 'left'}} className='px-0.1 py-1 mt-2 mb-1'>
       <DataGrid
         className='bg-white'
@@ -197,7 +244,11 @@ function CustomToolbarSelect() {
         slots={{
           toolbar: CustomToolbarSelect,
         }}
-        rows={rowsSelected}
+        getRowId={(row) => row.id}
+        experimentalFeatures={{ newEditingApi: true }}
+        onProcessRowUpdateError={handleRowUpdateErrorPrice}
+        processRowUpdate={handleCellEditChangePrice}
+        rows={selectedTableRows}
         columns={columnsSelected}
         isCellEditable={(params) => params.row.Price}
         initialState={{

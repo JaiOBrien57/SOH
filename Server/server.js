@@ -44,6 +44,7 @@ app.get("/api/availList", (req, res) => {
     var IDDear = element.ID
     var CageQTY = 0
     var RefurbCageTwoQTY = 0
+    var TotalQTY = 0
     var DealerPrice = element.DealerPrice
 
     availResponse.Items.forEach(elementTwo => {
@@ -59,11 +60,13 @@ app.get("/api/availList", (req, res) => {
       if(SKU == SKUBulk && LocationBulk == "BNE - CAGE - Refurb 2 (106.2)"){
         RefurbCageTwoQTY = RefurbCageTwoQTY+AvailableQTYBulk
       } 
+
     })
-    
+
+    TotalQTY = CageQTY+RefurbCageTwoQTY
 
     if(CageQTY != "" || RefurbCageTwoQTY != ""){
-      availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice})
+      availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY})
     }
 
   });
