@@ -6,7 +6,7 @@ function App() {
 
   //Main HTML
   return (
-    <div style={{height: '100vh'}} className="h-100% bg-gray-200">
+    <div style={{height: '100vh'}} className="bg-gray-200">
       <div className='headerText bg-white border border-bg-gray-200'>
         <h1 className="text-black">RMG Tools</h1>
       </div>

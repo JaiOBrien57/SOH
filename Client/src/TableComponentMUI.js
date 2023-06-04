@@ -1,13 +1,40 @@
 import { CSVLink, CSVDownload } from "react-csv";
 import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams,GridCellEditStopReasons  } from '@mui/x-data-grid';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import Button from '@mui/material/Button';
 import clsx from 'clsx';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useDemoData } from '@mui/x-data-grid-generator';
 import { Link } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import Button from "react-bootstrap/Button";
-import { Select, initTE } from "tw-elements";
-initTE({ Select });
+// import Button from "react-bootstrap/Button";
+// import { Select, initTE } from "tw-elements";
+// initTE({ Select });
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+const theme = createTheme({
+  status: {
+    danger: '#e53e3e',
+  },
+  palette: {
+    primary: {
+      main: '#0971f1',
+      darker: '#053e85',
+    },
+    purple: {
+      main: '#7e57c2',
+      darker: '#053e85',
+      contrastText: '#fff',
+    },
+  },
+});
 
 
 export default function DataTable() {
@@ -19,6 +46,8 @@ const [chosenActionType, SetChosenActionType] = React.useState({ChosenActionType
 const [contentLoaded, SetContentLoaded] = React.useState(true)
 const [mainTableRows, SetMainTableRows] = React.useState([{"id":""}])
 const [selectedTableRows, SetSelectedTableRows] = React.useState([{"id":""}])
+const [saleTransferButton, SetSaleTransferButton] = React.useState('');
+
 
 //Get the avail List
 useEffect(() => {
@@ -107,11 +136,9 @@ const onRowsSelectionHandler = (ids) => {
 };
 
 //Handle selected action type
-const ActionTypeChange = (event) => {
-  const valueSet = event.target.value;
-  SetChosenActionType({ChosenActionType: valueSet});
-  console.log("Action Type Changed")
-}
+const handleChange = (event) => {
+  SetSaleTransferButton(event.target.value);
+};
 
 //Menu For Main SOH Table
 function CustomToolbar() {
@@ -146,20 +173,16 @@ const getTogglableColumns = (columns) => {
 
 //Render the HTML
   return (
-    <div>
+    <div style={{height: "83vh"}}>
 
-      <div className='W-max h-max'>
-      <div style={{width: "75.94%", float: "left"}} className="bg-white ml-5 h-7 mt-3 rounded text-black border border-gray-300 text-center text-lg shadow-md font-semibold">
+    <div style={{ height: "100%", width: '78%', float: "left"}} className='px-5 py-1 mt-3 flexParent'>
+
+    <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-black border border-gray-300 text-center text-lg shadow-md font-semibold">
         Stock On Hand
       </div>
-      <div style={{width: "21%", float: "left"}} className="bg-white ml-5 h-7 mt-3 mb-1 rounded text-black border border-gray-300 text-center text-lg shadow-md font-semibold">
-        Selected
-      </div>
-      </div>
 
-    <div style={{ height: 730, width: '78%', float: "left"}} className='px-5 py-1'>
       <DataGrid
-        className='bg-white'
+        className='bg-white flexChild'
         sx={{
           boxShadow: 1,
           border: 1,
@@ -213,26 +236,43 @@ const getTogglableColumns = (columns) => {
       />
     </div>
 
-    <div style={{width: "10.39%", float: "left"}} className="bg-white mb-1 ml-0 h-7 mt-1 rounded text-black border border-gray-300 px-2 py-1 text-left text-sm shadow-md font-semibold">
-        Action:
-      </div>
-        
-      <select onChange={ActionTypeChange} value={chosenActionType.ChosenActionType} style={{width: "10.5%", height: 28, float: "left"}} className="mb-1 ml-1 mt-1 block rounded-md border-gray-300 shadow-md px-2.5 text-stone-950 text-center ring-1 ring-inset ring-stone-300 placeholder:text-stone-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6 bg-white outline-0">
-        <option key={1} value={"Transfer"}>Transfer</option>
-        <option key={2} value={"Sale"}>Sale</option>
-    </select>
-  
-      <button style={{width: "10.39%", height: "27%", float: "left"}} class="ml-0 mt-1.5 flex text-center justify-center border-gray-300 shadow-md rounded-md bg-purple-500 text-sm font-semibold leading-6 text-white hover:bg-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-        Push To Dear
-      </button>
 
-      <button style={{width: "10.5%", height: "27%", float: "left"}} class="ml-1 mt-1.5 flex text-center justify-center border-gray-300 shadow-md rounded-md bg-green-500 text-sm font-semibold leading-6 text-white hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-        Download CSV
-      </button>
-   
-    <div style={{ height: 655.35, width: '21%', float: 'left'}} className='px-0.1 py-1 mt-2 mb-1'>
+    <div style={{ height: "100%", width: '21%', float: 'left'}} className=' py-1 mt-3 flexParent'>
+
+    <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-black border border-gray-300 text-center text-lg shadow-md font-semibold">
+        Selected
+      </div>
+
+      <div style={{width: "100%"}} className="mb-2 h-max">
+      <FormControl style={{width: "50%",height: "100%",float: "left"}} size="small" className="bg-white">
+        <InputLabel id="demo-select-small-label">Action</InputLabel>
+        <Select
+          labelId="demo-select-small-label"
+          id="demo-select-small"
+          value={saleTransferButton}
+          label="Action"
+          onChange={handleChange}
+        >
+          <MenuItem value={"Sale"}>Sale</MenuItem>
+          <MenuItem value={"Transfer"}>Transfer</MenuItem>
+        </Select>
+      </FormControl>
+
+      <ThemeProvider theme={theme}>
+      <ButtonGroup
+      disableElevation
+      variant="contained"
+      aria-label="Disabled elevation buttons"
+      style={{width: "48%",height: "100%",float: "right"}}
+    >
+      <Button variant="contained" color="primary" style={{width: "50%"}} >PUSH</Button>
+      <Button variant="contained" color="primary" style={{width: "50%"}}>CSV</Button>
+    </ButtonGroup>
+    </ThemeProvider>
+      </div>
+
       <DataGrid
-        className='bg-white'
+        className='bg-white flexChild'
         sx={{
           boxShadow: 1,
           border: 1,
@@ -271,11 +311,8 @@ const getTogglableColumns = (columns) => {
         disableRowSelectionOnClick 
         onRowSelectionModelChange={(ids) => onRowsSelectionHandler(ids)}
       />
-    </div>
 
-    {/* <CSVLink data={csvData} style={{width: "5%", height: "27%", float: "left"}} class="ml-5 flex text-center justify-center border-gray-300 shadow-md rounded-md bg-green-500 text-sm font-semibold leading-6 text-white hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-        Export CSV
-      </CSVLink > */}
+    </div>
 
     </div>
   );
