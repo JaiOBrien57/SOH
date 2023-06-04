@@ -18,6 +18,10 @@ import React, { useEffect, useState } from "react";
 // import { Select, initTE } from "tw-elements";
 // initTE({ Select });
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import LoadingButton from '@mui/lab/LoadingButton';
+import SaveIcon from '@mui/icons-material/Save';
+import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const theme = createTheme({
   status: {
@@ -47,7 +51,9 @@ const [contentLoaded, SetContentLoaded] = React.useState(true)
 const [mainTableRows, SetMainTableRows] = React.useState([{"id":""}])
 const [selectedTableRows, SetSelectedTableRows] = React.useState([{"id":""}])
 const [saleTransferButton, SetSaleTransferButton] = React.useState('');
-
+const [pushDearButtonState, SetPushDearButtonState] = React.useState(false);
+const [downloadDearButtonState, SetDownloadDearButtonState] = React.useState(false);
+const delay = ms => new Promise(res => setTimeout(res, ms));
 
 //Get the avail List
 useEffect(() => {
@@ -75,7 +81,7 @@ useEffect(() => {
 //Set the rows state for the selected Table
 useEffect(() => {
   function SetSelectedTableRowsData() {
-    const rows = selectedDataTable.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice}))
+    const rows = selectedDataTable.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY}))
     SetSelectedTableRows(rows)
     console.log(rows)
   }
@@ -102,13 +108,14 @@ const columns = [
 
 //Setup the columns for Selected Table
 const columnsSelected = [
-  { field: 'id', headerName: '#', width: 40, headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false,disableExport: true},
+  { field: 'id', headerName: '#', width: 40, headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false,disableExport: true, align: "center"},
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
   { field: 'Name', headerName: 'Name 📱', width: 600, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
-  { field: 'Price', headerName: 'Price', width: 100, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true},
+  { field: 'Price', headerName: 'Price (ex)', width: 90, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true, align: "center"},
+  { field: 'TotalQTY', headerName: 'QTY', width: 40, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true, align: "center"}
 ];
 
-//Test update price in select table
+//Set the select table rows after cell edit
 const handleCellEditChangePrice = (params, event) => {
   const { id, field, value, api } = params;
   const updatedRows = selectedTableRows.map((row) => {
@@ -122,11 +129,25 @@ const handleCellEditChangePrice = (params, event) => {
   return(params)
 };
 
+//Handle error for select table cell edit
 const handleRowUpdateErrorPrice = (params, error) => {
   console.error('An error occurred while updating the row:', params);
   return(params)
 };
 
+//Handle Push Dear Button
+const handlePushDear = async () =>{
+  SetPushDearButtonState(true)
+  await delay(5000)
+  SetPushDearButtonState(false)
+}
+
+//Handle Download Dear Button
+const handleDownloadDear = async () =>{
+  SetDownloadDearButtonState(true)
+  await delay(5000)
+  SetDownloadDearButtonState(false)
+}
 
 //Handle selected data
 const onRowsSelectionHandler = (ids) => {
@@ -244,7 +265,7 @@ const getTogglableColumns = (columns) => {
       </div>
 
       <div style={{width: "100%"}} className="mb-2 h-max">
-      <FormControl style={{width: "50%",height: "100%",float: "left"}} size="small" className="bg-white">
+      <FormControl style={{width: "50%",height: "100%",float: "left"}} size="small" className="bg-white rounded">
         <InputLabel id="demo-select-small-label">Action</InputLabel>
         <Select
           labelId="demo-select-small-label"
@@ -265,8 +286,8 @@ const getTogglableColumns = (columns) => {
       aria-label="Disabled elevation buttons"
       style={{width: "48%",height: "100%",float: "right"}}
     >
-      <Button variant="contained" color="primary" style={{width: "50%"}} >PUSH</Button>
-      <Button variant="contained" color="primary" style={{width: "50%"}}>CSV</Button>
+      <LoadingButton onClick={handlePushDear} loading={pushDearButtonState} variant="contained" color="secondary" style={{width: "50%"}} loadingPosition="start" startIcon={<DoubleArrowIcon />}>PUSH</LoadingButton>
+      <LoadingButton onClick={handleDownloadDear} loading={downloadDearButtonState} variant="contained" color="primary" style={{width: "50%"}} loadingPosition="start" startIcon={<DownloadIcon />}>CSV</LoadingButton>
     </ButtonGroup>
     </ThemeProvider>
       </div>
