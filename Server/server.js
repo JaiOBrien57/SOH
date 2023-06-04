@@ -92,7 +92,7 @@ app.get("/api/availList", (req, res) => {
 //Get Request from frontend for pushing transfer
 app.put("/api/availList", (req, res) => {
 
-}
+})
 
 
 //Launch the backend server
