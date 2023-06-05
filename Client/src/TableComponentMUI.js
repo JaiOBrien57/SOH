@@ -20,6 +20,7 @@ import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 import DownloadIcon from '@mui/icons-material/Download';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 
 const theme = createTheme({
   status: {
@@ -51,6 +52,8 @@ const [pushDearButtonState, SetPushDearButtonState] = React.useState(false);
 const [downloadDearButtonState, SetDownloadDearButtonState] = React.useState(false);
 const [DearPushOpen, SetDearPushOpen] = React.useState(false)
 const [newSalesOrder, setNewSalesOrder] = React.useState("")
+const [newSaleID, SetNewSaleID] = React.useState("")
+const [dearPushStatus, SetDearPushStatus] = React.useState(0)
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 //Get the avail List
@@ -146,6 +149,8 @@ const handlePushDear = async (event) =>{
     console.log(returnVal)
     SetDearPushOpen(true)
     setNewSalesOrder(returnVal.SaleOrder)
+    SetNewSaleID(returnVal.SaleID)
+    SetDearPushStatus(returnVal.ResCode)
   }if(saleTransferButton === "Transfer"){
     //Send Request to server
     const request = await fetch("/api/transferSelect",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify(selectedTableRows)});
@@ -158,6 +163,27 @@ const handlePushDear = async (event) =>{
   }
   SetPushDearButtonState(false)
 }
+
+//Handle the Alert after dear pushed
+const DearPushAlertRender = () => {
+  if (dearPushStatus == 200) {
+    return <Snackbar open={DearPushOpen} autoHideDuration={100} anchorOrigin={{vertical: "top",horizontal: "center"}}>
+    <Alert onClose={handleCloseAlert} severity="success" sx={{ width: '100%'}}>
+      <AlertTitle>Success</AlertTitle>
+      <Typography>Dear Order Created Successfully <Link href={`https://inventory.dearsystems.com/Sale#${newSaleID}`} target="_blank">{newSalesOrder}</Link></Typography>
+    </Alert>
+  </Snackbar>
+  }if (dearPushStatus != 200) {
+    return <Snackbar open={DearPushOpen} autoHideDuration={100} anchorOrigin={{vertical: "top",horizontal: "center"}}>
+    <Alert onClose={handleCloseAlert} severity="error" sx={{ width: '100%'}}>
+      <AlertTitle>Error</AlertTitle>
+      <Typography>Dear Order Could Not Be Made <Link href={`https://inventory.dearsystems.com/Sale#${newSaleID}`} target="_blank">{newSalesOrder}</Link></Typography>
+    </Alert>
+  </Snackbar>
+  }
+  
+}
+
 
 //Handle Download Dear Button
 const handleDownloadDear = async () =>{
@@ -222,12 +248,7 @@ const getTogglableColumns = (columns) => {
   return (
     <div style={{height: "83vh"}}>
 
-    <Snackbar open={DearPushOpen} autoHideDuration={2000} anchorOrigin={{vertical: "top",horizontal: "center"}}>
-      <Alert onClose={handleCloseAlert} severity="error" sx={{ width: '100%'}}>
-        Dear Order Created Successfully
-        <Typography>{newSalesOrder}</Typography>
-      </Alert>
-    </Snackbar>
+    <DearPushAlertRender/>
     
     <div style={{ height: "100%", width: '78%', float: "left"}} className='flexParent pr-4'>
 

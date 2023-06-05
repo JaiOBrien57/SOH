@@ -92,10 +92,10 @@ function App() {
     <div style={{height: '100vh'}} className="bg-gray-200">
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open} sx={{backgroundColor: "#4b4d59" }}>
+      <AppBar position="fixed" open={open} sx={{backgroundColor: "white" }}>
         <Toolbar>
           <IconButton
-            color="inherit"
+            color="black"
             aria-label="open drawer"
             onClick={handleDrawerOpen}
             edge="start"
@@ -103,7 +103,7 @@ function App() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{color: "white"}}>
+          <Typography variant="h5" noWrap component="div" sx={{color: "black"}}>
             Stock On Hand
           </Typography>
           <TopDropDowns/>
@@ -116,7 +116,7 @@ function App() {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
-            backgroundColor: "#cdcfd4",
+            backgroundColor: "white",
           },
         }}
         variant="persistent"

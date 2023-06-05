@@ -120,9 +120,9 @@ app.post("/api/saleSelect", (req, res) => {
   console.log("New Dear SO:",SaleSO,DearResSaleStatus)
   //Send response back to frontend
   if(DearResCode === 200 && DearResSaleStatus === 200){
-    res.json({"Server Response":"Success","SaleOrder": SaleSO}).status(200)
+    res.json({"Server Response":"success","SaleOrder": SaleSO,"SaleID":NewSaleID,"ResCode":200}).status(200)
   }if(DearResCode != 200 || DearResSaleStatus != 200){
-    res.json({"Server Response":"Failed","SaleOrder": SaleSO}).status(500)
+    res.json({"Server Response":"error","SaleOrder": SaleSO,"SaleID":NewSaleID,"ResCode":500}).status(500)
   }
     
   }

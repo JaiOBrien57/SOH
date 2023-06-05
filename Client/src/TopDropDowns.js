@@ -29,7 +29,7 @@ export default function TopDropDowns() {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        className="ml-20 text-white"
+        className="ml-20 text-blue-500"
       >
         Dashboard
       </Button>
@@ -53,7 +53,7 @@ export default function TopDropDowns() {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        className="ml-10 text-white"
+        className="ml-10 text-blue-500"
       >
         Tools
       </Button>
@@ -77,7 +77,7 @@ export default function TopDropDowns() {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
-        className="ml-10 text-white"
+        className="ml-10 text-blue-500"
       >
         Other
       </Button>
