@@ -11,6 +11,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 
+//Setup the Dear API
+const dearHeaders = {
+  'Content-Type': 'application/json',
+  'api-auth-accountid': '17c87b52-bd17-44ca-a461-3eb522ef708d',
+  'api-auth-applicationkey': 'de744903-23ba-5a16-a198-fab8bd7e207e'
+}
+const SaleURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale"
+const SaleOrderURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale/order"
+
 
 //Receive the request on refresh from frontend
 app.get("/api/availList", (req, res) => {
@@ -89,10 +98,53 @@ app.get("/api/availList", (req, res) => {
 });
 
 
-//Get Request from frontend for pushing transfer
-app.put("/api/availList", (req, res) => {
+//Get Request from frontend for pushing sale
+app.post("/api/saleSelect", (req, res) => {
+  async function runSelectReq(){
+  //Get the select table of data
+  const SelectTableData = req.body;
+  //Format the data to send
+  const saleBody = {"Customer":"Test Order"}
+  //Make Sale in dear
+  const DearReq = await fetch(SaleURL,{method: "POST", headers: dearHeaders,body: JSON.stringify(saleBody)})
+  const DearRes = await DearReq.json()
+  const DearResCode = await DearReq.status
+  const NewSaleID = DearRes.ID
+  console.log("New Sale, ID:",NewSaleID,DearResCode)
+  const lineItems = SelectTableData.map((row) => ({"ProductID": row.IDDear,"SKU": row.SKU,"Name": row.Name, "Quantity": row.TotalQTY, "Price": row.Price, "Tax": 0, "TaxRule": "GST (Sale)","Total": parseInt(row.TotalQTY)*parseFloat(row.Price)}))
+  const saleOrderBody = {"SaleID":NewSaleID,"Status":"DRAFT","Lines": lineItems}
+  const DearReqSale = await fetch(SaleOrderURL,{method: "POST", headers: dearHeaders,body: JSON.stringify(saleOrderBody)})
+  const DearResSale = await DearReqSale.json()
+  const DearResSaleStatus = await DearReqSale.status
+  const SaleSO = DearResSale.SaleOrderNumber
+  console.log("New Dear SO:",SaleSO,DearResSaleStatus)
+  //Send response back to frontend
+  if(DearResCode === 200 && DearResSaleStatus === 200){
+    res.json({"Server Response":"Success","SaleOrder": SaleSO}).status(200)
+  }if(DearResCode != 200 || DearResSaleStatus != 200){
+    res.json({"Server Response":"Failed","SaleOrder": SaleSO}).status(500)
+  }
+    
+  }
+runSelectReq()
+});
 
-})
+
+//Get Request from frontend for pushing transfer
+app.post("/api/transferSelect", (req, res) => {
+  async function runSelectReq(){
+  //Get the select table of data
+  const SelectTableData = req.body;
+  console.log(SelectTableData)
+  //Make Transfer in dear
+  
+  //Send response back to frontend
+  res.json({"Server Response":"Transfer Success"}).status(200)
+    
+  }
+runSelectReq()
+});
+
 
 
 //Launch the backend server

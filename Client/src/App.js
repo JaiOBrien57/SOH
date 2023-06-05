@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import TableComponentMUI from "./TableComponentMUI"
+import TopDropDowns from "./TopDropDowns";
 import Button from "react-bootstrap/Button";
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -76,6 +77,7 @@ function App() {
 
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -90,7 +92,7 @@ function App() {
     <div style={{height: '100vh'}} className="bg-gray-200">
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
+      <AppBar position="fixed" open={open} sx={{backgroundColor: "#4b4d59" }}>
         <Toolbar>
           <IconButton
             color="inherit"
@@ -101,9 +103,10 @@ function App() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{color: "white"}}>
             Stock On Hand
           </Typography>
+          <TopDropDowns/>
         </Toolbar>
       </AppBar>
       <Drawer
@@ -113,6 +116,7 @@ function App() {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
+            backgroundColor: "#cdcfd4",
           },
         }}
         variant="persistent"

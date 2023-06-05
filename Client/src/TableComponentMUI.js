@@ -12,16 +12,14 @@ import Button from '@mui/material/Button';
 import clsx from 'clsx';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useDemoData } from '@mui/x-data-grid-generator';
-import { Link } from "@mui/material";
+import { Link, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
-// import Button from "react-bootstrap/Button";
-// import { Select, initTE } from "tw-elements";
-// initTE({ Select });
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LoadingButton from '@mui/lab/LoadingButton';
-import SaveIcon from '@mui/icons-material/Save';
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 import DownloadIcon from '@mui/icons-material/Download';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 const theme = createTheme({
   status: {
@@ -40,19 +38,19 @@ const theme = createTheme({
   },
 });
 
-
 export default function DataTable() {
 
 //Setup React variables
 const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":""}]);
 const [selectedDataTable, SetSelectedDataTable] = React.useState([{}]);
-const [chosenActionType, SetChosenActionType] = React.useState({ChosenActionType: ""});
 const [contentLoaded, SetContentLoaded] = React.useState(true)
 const [mainTableRows, SetMainTableRows] = React.useState([{"id":""}])
 const [selectedTableRows, SetSelectedTableRows] = React.useState([{"id":""}])
 const [saleTransferButton, SetSaleTransferButton] = React.useState('');
 const [pushDearButtonState, SetPushDearButtonState] = React.useState(false);
 const [downloadDearButtonState, SetDownloadDearButtonState] = React.useState(false);
+const [DearPushOpen, SetDearPushOpen] = React.useState(false)
+const [newSalesOrder, setNewSalesOrder] = React.useState("")
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 //Get the avail List
@@ -81,7 +79,7 @@ useEffect(() => {
 //Set the rows state for the selected Table
 useEffect(() => {
   function SetSelectedTableRowsData() {
-    const rows = selectedDataTable.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY}))
+    const rows = selectedDataTable.map((row,index)=>({"id": index,"IDDear":row.IDDear,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY}))
     SetSelectedTableRows(rows)
     console.log(rows)
   }
@@ -136,9 +134,28 @@ const handleRowUpdateErrorPrice = (params, error) => {
 };
 
 //Handle Push Dear Button
-const handlePushDear = async () =>{
+const handlePushDear = async (event) =>{
+  
+  event.preventDefault();
   SetPushDearButtonState(true)
-  await delay(5000)
+
+  if(saleTransferButton === "Sale"){
+    //Send Request to server
+    const request = await fetch("/api/saleSelect",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify(selectedTableRows)});
+    const returnVal = await request.json()
+    console.log(returnVal)
+    SetDearPushOpen(true)
+    setNewSalesOrder(returnVal.SaleOrder)
+  }if(saleTransferButton === "Transfer"){
+    //Send Request to server
+    const request = await fetch("/api/transferSelect",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify(selectedTableRows)});
+    const returnVal = await request.json()
+    console.log(returnVal)
+    SetDearPushOpen(true)
+  }if(saleTransferButton === ""){
+    console.log("No Action Type Selected")
+    SetDearPushOpen(true)
+  }
   SetPushDearButtonState(false)
 }
 
@@ -159,6 +176,15 @@ const onRowsSelectionHandler = (ids) => {
 //Handle selected action type
 const handleChange = (event) => {
   SetSaleTransferButton(event.target.value);
+};
+
+//Handle Clicking away from alert
+const handleCloseAlert = (event, reason) => {
+  if (reason === 'clickaway') {
+    return;
+  }
+
+  SetDearPushOpen(false);
 };
 
 //Menu For Main SOH Table
@@ -196,6 +222,13 @@ const getTogglableColumns = (columns) => {
   return (
     <div style={{height: "83vh"}}>
 
+    <Snackbar open={DearPushOpen} autoHideDuration={2000} anchorOrigin={{vertical: "top",horizontal: "center"}}>
+      <Alert onClose={handleCloseAlert} severity="error" sx={{ width: '100%'}}>
+        Dear Order Created Successfully
+        <Typography>{newSalesOrder}</Typography>
+      </Alert>
+    </Snackbar>
+    
     <div style={{ height: "100%", width: '78%', float: "left"}} className='flexParent pr-4'>
 
     <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-black border border-gray-300 text-center text-lg shadow-md font-semibold">
