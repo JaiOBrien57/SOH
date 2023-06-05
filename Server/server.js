@@ -103,14 +103,14 @@ app.post("/api/saleSelect", (req, res) => {
   async function runSelectReq(){
   //Get the select table of data
   const SelectTableData = req.body;
-  //Format the data to send
-  const saleBody = {"Customer":"Test Order"}
   //Make Sale in dear
+  const saleBody = {"Customer":"Test Order"}
   const DearReq = await fetch(SaleURL,{method: "POST", headers: dearHeaders,body: JSON.stringify(saleBody)})
   const DearRes = await DearReq.json()
   const DearResCode = await DearReq.status
   const NewSaleID = DearRes.ID
   console.log("New Sale, ID:",NewSaleID,DearResCode)
+  //Make Sale Order in dear
   const lineItems = SelectTableData.map((row) => ({"ProductID": row.IDDear,"SKU": row.SKU,"Name": row.Name, "Quantity": row.TotalQTY, "Price": row.Price, "Tax": 0, "TaxRule": "GST (Sale)","Total": parseInt(row.TotalQTY)*parseFloat(row.Price)}))
   const saleOrderBody = {"SaleID":NewSaleID,"Status":"DRAFT","Lines": lineItems}
   const DearReqSale = await fetch(SaleOrderURL,{method: "POST", headers: dearHeaders,body: JSON.stringify(saleOrderBody)})
