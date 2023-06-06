@@ -37,10 +37,31 @@ app.get("/api/availList", (req, res) => {
     var Name = element.Name
     var IDDear = element.ID
     var PriceTier1 = element.Product.PriceTier1
+    var Brand = element.Product.AdditionalAttribute1
+    var Model = element.Product.AdditionalAttribute2
+    if (Model == null || Model == "") {
+      Model="UNKOWN"
+    }
+    var GB = element.Product.AdditionalAttribute3
+    var Colour = element.Product.AdditionalAttribute4
+    var Connectivity = element.Product.AdditionalAttribute5
+    var Battery = element.Product.AdditionalAttribute6
+    var Grade = element.Product.AdditionalAttribute7
+  
+    if (Model.includes("iPad")) {
+      var FinalModel = Brand+" "+Model+" "+GB+" "+Connectivity+" - "+Colour
+    }if (!Model.includes("iPad")) {
+      var FinalModel = Brand+" "+Model+" "+GB+" - "+Colour
+    }
+
+    if (Battery == "New Battery") {
+      Battery = "100%"
+    }
+
    
     if(!cacheArray.includes(SKU) && Name.includes("Renewed")){
       cacheArray.push(SKU)
-      availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1})
+      availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery})
     }
 
   })
@@ -55,6 +76,9 @@ app.get("/api/availList", (req, res) => {
     var RefurbCageTwoQTY = 0
     var TotalQTY = 0
     var DealerPrice = element.DealerPrice
+    var FinalModel = element.FinalModel
+    var Grade = element.Grade
+    var Battery = element.Battery
 
     availResponse.Items.forEach(elementTwo => {
       var SKUBulk = elementTwo.SKU
@@ -75,16 +99,16 @@ app.get("/api/availList", (req, res) => {
     TotalQTY = CageQTY+RefurbCageTwoQTY
 
     if(CageQTY != "" || RefurbCageTwoQTY != ""){
-      availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY})
+      availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery})
     }
 
   });
 
   //Sort the array by name
-  availFormatted.sort((a,b)=>{if (a.Name < b.Name) {
+  availFormatted.sort((a,b)=>{if (a.FinalModel < b.FinalModel) {
     return -1;
   }
-  if (a.Name > b.Name) {
+  if (a.FinalModel > b.FinalModel) {
     return 1;
   }
   return 0;})

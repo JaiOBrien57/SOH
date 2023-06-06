@@ -42,7 +42,7 @@ const theme = createTheme({
 export default function DataTable() {
 
 //Setup React variables
-const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":""}]);
+const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":"","TotalQTY":"","FinalModel":"","Grade":"","Battery":""}]);
 const [selectedDataTable, SetSelectedDataTable] = React.useState([{}]);
 const [contentLoaded, SetContentLoaded] = React.useState(true)
 const [mainTableRows, SetMainTableRows] = React.useState([{"id":""}])
@@ -71,7 +71,7 @@ useEffect(() => {
 //Set the rows state for the Main Table
 useEffect(() => {
   function SetMainTableRowsData() {
-    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY}))
+    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery}))
     SetMainTableRows(rows)
     console.log(rows)
   }
@@ -97,14 +97,13 @@ const currencyFormatter = (params) => {
 
 //Setup the columns for SOH Table
 const columns = [
-  { field: 'id', headerName: 'ID', width: 40, headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false, disableExport: true},
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", renderCell:rowData=><Link href={`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`} target="_blank">{rowData.row.SKU}</Link>},
-  { field: 'Name', headerName: 'Name 📱', width: 700, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
+  { field: 'FinalModel', headerName: 'Model 📱', width: 400, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
+  { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,align: "center"},
+  { field: 'Battery', headerName: 'Battery', width: 70, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,align: "center"},
   { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
-  { field: 'IDDear', headerName: 'Product ID', width: 105 ,align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true ,sortable: false,disableExport: true},
-  { field: 'TotalQTY', headerName: 'TotalQTY', width: 40,type: 'number', headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false, disableExport: true},
 ];
 
 //Setup the columns for Selected Table
@@ -292,9 +291,6 @@ const getTogglableColumns = (columns) => {
           },
           columns: {
             columnVisibilityModel: {
-              id: false,
-              IDDear: false,
-              TotalQTY: false,
             },
           },
           aggregation: {

@@ -11,12 +11,15 @@ import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import { Typography } from "@mui/material";
 import BuildIcon from '@mui/icons-material/Build';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule';
+import { useNavigate } from "react-router-dom";
 
 
 export default function TopDropDowns() {
 
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  let navigate = useNavigate(); 
 
   //Tools Menu Vars
   const [anchorElTools, setAnchorElTools] = React.useState(null);
@@ -36,15 +39,19 @@ export default function TopDropDowns() {
   const handleClickPricing = (event) => {
     setAnchorElPricing(event.currentTarget);
   };
+
   const handleClosePricing = () => {
     setAnchorElPricing(null);
-  };
+  }
 
 
   //Handle On Close for SOH (GO TO SOH SHEET)
-
-
-
+  const handleCloseSOH = () => {
+    setAnchorElPricing(null);
+    let path = `/SOH`; 
+    navigate(path);
+  };
+ 
 
 
   
@@ -94,7 +101,7 @@ export default function TopDropDowns() {
           </MenuItem>
         <Divider />
 
-        <MenuItem dense={true} onClick={handleCloseTools}>
+        <MenuItem dense={true} onClick={handleCloseSOH}>
         <ListItemIcon>
         <ArrowRightIcon fontSize="small" />
           </ListItemIcon>
