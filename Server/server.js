@@ -86,11 +86,11 @@ app.get("/api/availList", (req, res) => {
       var LocationBulk = elementTwo.Location
       var BinBulk = elementTwo.Bin
       
-      if(SKU == SKUBulk && LocationBulk == "BNE - Main Warehouse" && BinBulk == "Cage"){
+      if(SKU == SKUBulk && LocationBulk == "BNE - Main Warehouse" && BinBulk == "Cage" && AvailableQTYBulk > 0){
         CageQTY = CageQTY+AvailableQTYBulk
       }
 
-      if(SKU == SKUBulk && LocationBulk == "BNE - CAGE - Refurb 2 (106.2)"){
+      if(SKU == SKUBulk && LocationBulk == "BNE - CAGE - Refurb 2 (106.2)" && AvailableQTYBulk > 0){
         RefurbCageTwoQTY = RefurbCageTwoQTY+AvailableQTYBulk
       } 
 
@@ -116,7 +116,7 @@ app.get("/api/availList", (req, res) => {
 
   //Sending results back
     res.json(availFormatted).status(200)
-    console.log(availFormatted)
+    console.log("Avail List has Been Fetched and Formatted")
   }
   getAvailList()
 });
@@ -135,7 +135,7 @@ app.post("/api/saleSelect", (req, res) => {
   const NewSaleID = DearRes.ID
   console.log("New Sale, ID:",NewSaleID,DearResCode)
   //Make Sale Order in dear
-  const lineItems = SelectTableData.map((row) => ({"ProductID": row.IDDear,"SKU": row.SKU,"Name": row.Name, "Quantity": row.TotalQTY, "Price": row.Price, "Tax": 0, "TaxRule": "GST (Sale)","Total": parseInt(row.TotalQTY)*parseFloat(row.Price)}))
+  const lineItems = SelectTableData.map((row) => ({"ProductID": row.IDDear,"SKU": row.SKU,"Name": row.Name, "Quantity": row.TotalQTY, "Price": parseFloat(String(row.Price).replace("$","").trim()), "Tax": 0, "TaxRule": "GST (Sale)","Total": parseInt(row.TotalQTY)*parseFloat(row.Price)}))
   const saleOrderBody = {"SaleID":NewSaleID,"Status":"DRAFT","Lines": lineItems}
   const DearReqSale = await fetch(SaleOrderURL,{method: "POST", headers: dearHeaders,body: JSON.stringify(saleOrderBody)})
   const DearResSale = await DearReqSale.json()

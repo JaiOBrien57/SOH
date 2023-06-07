@@ -1,5 +1,5 @@
 import { CSVLink, CSVDownload } from "react-csv";
-import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams,GridCellEditStopReasons  } from '@mui/x-data-grid';
+import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams,GridCellEditStopReasons,GridValueGetterParams,GridValueSetterParams  } from '@mui/x-data-grid';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -43,7 +43,7 @@ export default function DataTable() {
 
 //Setup React variables
 const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":"","TotalQTY":"","FinalModel":"","Grade":"","Battery":""}]);
-const [selectedDataTable, SetSelectedDataTable] = React.useState([{}]);
+const [selectedDataTable, SetSelectedDataTable] = React.useState([]);
 const [contentLoaded, SetContentLoaded] = React.useState(true)
 const [mainTableRows, SetMainTableRows] = React.useState([{"id":""}])
 const [selectedTableRows, SetSelectedTableRows] = React.useState([{"id":""}])
@@ -92,8 +92,13 @@ useEffect(() => {
 
 //Format as currency
 const currencyFormatter = (params) => {
-  return '$' + (params.value);
+  if (params.value == "" || params.value == "$") {
+    return '$' + (0)
+  }if (params.value != "" && params.value != "$") {
+    return '$' + (params.value);
+  }
 };
+
 
 //Setup the columns for SOH Table
 const columns = [
@@ -101,9 +106,9 @@ const columns = [
   { field: 'FinalModel', headerName: 'Model 📱', width: 400, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
   { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,align: "center"},
   { field: 'Battery', headerName: 'Battery', width: 70, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,align: "center"},
-  { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
+  { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
 ];
 
 //Setup the columns for Selected Table
@@ -111,8 +116,8 @@ const columnsSelected = [
   { field: 'id', headerName: '#', width: 40, headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false,disableExport: true, align: "center"},
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
   { field: 'Name', headerName: 'Name 📱', width: 600, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
-  { field: 'Price', headerName: 'Price (ex)', width: 90, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true, align: "center"},
-  { field: 'TotalQTY', headerName: 'QTY', width: 40, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true, align: "center"}
+  { field: 'TotalQTY', headerName: 'QTY', width: 40, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true, align: "center"},
+  { field: 'Price', headerName: 'Price (ex)', width: 90,type: 'number' ,disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true, align: "center",valueFormatter: currencyFormatter},
 ];
 
 //Set the select table rows after cell edit
@@ -182,7 +187,6 @@ const DearPushAlertRender = () => {
   }
   
 }
-
 
 //Handle Download Dear Button
 const handleDownloadDear = async () =>{
