@@ -130,23 +130,23 @@ function App() {
         </DrawerHeader>
         <Divider />
         <List>
-          <ListItem key={"Inbox"} disablePadding>
+          <ListItem key={"RenewedStock"} disablePadding>
             <ListItemButton>
               <ListItemIcon>
                 <InboxIcon/>
               </ListItemIcon>
-              <ListItemText primary={"Inbox"} />
+              <ListItemText primary={"Renewed Stock"} />
             </ListItemButton>
           </ListItem>
         </List>
         <Divider />
         <List>
-          <ListItem key={"All Mail"} disablePadding>
+          <ListItem key={"All Stock"} disablePadding>
             <ListItemButton>
               <ListItemIcon>
                 <InboxIcon />
               </ListItemIcon>
-              <ListItemText primary={"All Mail"} />
+              <ListItemText primary={"All Stock"} />
             </ListItemButton>
           </ListItem>
         </List>
