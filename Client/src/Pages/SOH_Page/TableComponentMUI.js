@@ -92,10 +92,10 @@ useEffect(() => {
 
 //Format as currency
 const currencyFormatter = (params) => {
-  if (params.value == "" || params.value == "$") {
+  if (params.value == "" || params.value == "$" || params.value == null) {
     return '$' + (0)
   }if (params.value != "" && params.value != "$") {
-    return '$' + (params.value);
+    return '$' + parseFloat((params.value)).toFixed(2);
   }
 };
 
@@ -113,7 +113,7 @@ const columns = [
 
 //Setup the columns for Selected Table
 const columnsSelected = [
-  { field: 'id', headerName: '#', width: 40, headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false,disableExport: true, align: "center"},
+  { field: 'id', headerName: '#', width: 40, headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false,disableExport: true, align: "left"},
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
   { field: 'Name', headerName: 'Name 📱', width: 600, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
   { field: 'TotalQTY', headerName: 'QTY', width: 40, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true, align: "center"},
@@ -365,7 +365,6 @@ const getTogglableColumns = (columns) => {
         processRowUpdate={handleCellEditChangePrice}
         rows={selectedTableRows}
         columns={columnsSelected}
-        isCellEditable={(params) => params.row.Price}
         initialState={{
           pagination: {
             paginationModel: { page: 0, pageSize: 25 },
