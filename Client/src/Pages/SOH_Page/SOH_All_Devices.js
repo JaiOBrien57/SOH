@@ -256,7 +256,7 @@ const getTogglableColumns = (columns) => {
     <div style={{ height: "100%", width: '78%', float: "left"}} className='flexParent pr-4'>
 
     <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-black border border-gray-300 text-center text-lg shadow-md font-semibold">
-        Stock On Hand
+        All Devices
       </div>
 
       <DataGrid

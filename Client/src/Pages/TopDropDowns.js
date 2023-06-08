@@ -45,12 +45,19 @@ export default function TopDropDowns() {
   }
 
 
-  //Handle On Close for SOH (GO TO SOH SHEET)
+  //Handle On Close for SOH
   const handleCloseSOH = () => {
     setAnchorElPricing(null);
-    let path = `/SOH`; 
+    let path = `/SOH_Devices`; 
     navigate(path);
   };
+
+  //Handle Click to Home Page
+  const handleHomePageClick = () =>{
+    setAnchorElPricing(null);
+    let path = `/`; 
+    navigate(path);
+  }
  
 
 
@@ -63,8 +70,18 @@ export default function TopDropDowns() {
         aria-controls={open ? 'basic-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
-        onClick={handleClickTools}
+        onClick={handleHomePageClick}
         className="ml-20 text-blue-500"
+      >
+        Home
+      </Button>
+      <Button
+        id="basic-button"
+        aria-controls={open ? 'basic-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+        onClick={handleClickTools}
+        className="ml-12 text-blue-500"
       >
         Tools
       </Button>
