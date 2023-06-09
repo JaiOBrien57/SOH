@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import Button from "react-bootstrap/Button";
 import { styled, useTheme } from '@mui/material/styles';
 import Menu from '@mui/material/Menu';
@@ -12,13 +12,15 @@ import { Typography } from "@mui/material";
 import BuildIcon from '@mui/icons-material/Build';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule';
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 
 export default function TopDropDowns() {
 
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [currentPage,SetCurrentPage] = React.useState("");
   let navigate = useNavigate(); 
 
   //Tools Menu Vars
@@ -66,12 +68,14 @@ export default function TopDropDowns() {
   return (
     <div>
       <Button
+        to='/'
         id="basic-button"
         aria-controls={open ? 'basic-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleHomePageClick}
-        className="ml-20 text-blue-500"
+        color="#1dbf7e"
+        className="ml-20 text-teal-500"
       >
         Home
       </Button>
@@ -81,9 +85,10 @@ export default function TopDropDowns() {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClickTools}
-        className="ml-12 text-blue-500"
+        className="ml-12 text-teal-500"
       >
         Tools
+        <ArrowDropDownIcon fontSize="small"/>
       </Button>
       <Menu
         id="basic-menu"
@@ -132,9 +137,10 @@ export default function TopDropDowns() {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClickPricing}
-        className="ml-12 text-blue-500"
+        className="ml-12 text-teal-500"
       >
         Pricing
+        <ArrowDropDownIcon fontSize="small"/>
       </Button>
       <Menu
         id="basic-menu"

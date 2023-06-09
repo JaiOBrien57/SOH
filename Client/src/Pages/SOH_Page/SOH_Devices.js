@@ -23,6 +23,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 
 const theme = createTheme({
+  //Main Themes
   status: {
     danger: '#e53e3e',
   },
@@ -42,7 +43,7 @@ const theme = createTheme({
 export default function DataTable() {
 
 //Setup React variables
-const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":"","TotalQTY":"","FinalModel":"","Grade":"","Battery":""}]);
+const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":"","TotalQTY":"","FinalModel":"","Grade":"","Battery":"","AVGCost":""}]);
 const [selectedDataTable, SetSelectedDataTable] = React.useState([]);
 const [contentLoaded, SetContentLoaded] = React.useState(true)
 const [mainTableRows, SetMainTableRows] = React.useState([{"id":""}])
@@ -59,7 +60,7 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 //Get the avail List
 useEffect(() => {
   async function FetchAvail() {
-    const request = await fetch("/api/availList");
+    const request = await fetch("/api/renewedDevicesList");
     const response = await request.json();
     setAvailData(response);
     SetContentLoaded(false)
@@ -71,7 +72,7 @@ useEffect(() => {
 //Set the rows state for the Main Table
 useEffect(() => {
   function SetMainTableRowsData() {
-    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery}))
+    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost}))
     SetMainTableRows(rows)
     console.log(rows)
   }
@@ -108,6 +109,7 @@ const columns = [
   { field: 'Battery', headerName: 'Battery', width: 70, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,align: "center"},
   { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
+  { field: 'AVGCost', headerName: 'AVG (ex)', type: 'number', width: 80, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
 ];
 
@@ -220,7 +222,7 @@ const handleCloseAlert = (event, reason) => {
 function CustomToolbar() {
   return (
     <GridToolbarContainer>
-      <GridToolbarExport />
+      <GridToolbarExport/>
       <GridToolbarColumnsButton />
       <GridToolbarFilterButton />
     </GridToolbarContainer>
@@ -255,10 +257,10 @@ const getTogglableColumns = (columns) => {
     
     <div style={{ height: "100%", width: '78%', float: "left"}} className='flexParent pr-4'>
 
-    <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-black border border-gray-300 text-center text-lg shadow-md font-semibold">
-        Available Devices
+    <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
+        Devices
       </div>
-
+      
       <DataGrid
         className='bg-white flexChild'
         sx={{
@@ -314,7 +316,7 @@ const getTogglableColumns = (columns) => {
 
     <div style={{ height: "100%", width: '22%', float: 'left'}} className='flexParent'>
 
-    <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-black border border-gray-300 text-center text-lg shadow-md font-semibold">
+    <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
         Selected
       </div>
 

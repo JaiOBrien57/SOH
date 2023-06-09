@@ -22,7 +22,7 @@ const SaleOrderURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale/orde
 
 
 //Receive the request on refresh from frontend
-app.get("/api/availList", (req, res) => {
+app.get("/api/renewedDevicesList", (req, res) => {
   async function getAvailList(){
   //Get the avail list
     const availRequest = await fetch("https://api.renewablemobile.com.au/dear/productavailability?fields=ID,SKU,Name,Available,Location,Bin&Name=LIKE(Renewed)&includeproduct=true",{method: "GET", headers: {"auth":"Jindalee1!"}})
@@ -39,6 +39,7 @@ app.get("/api/availList", (req, res) => {
     var PriceTier1 = element.Product.PriceTier1
     var Brand = element.Product.AdditionalAttribute1
     var Model = element.Product.AdditionalAttribute2
+    var AVGCost = element.Product.AverageCost
     if (Model == null || Model == "") {
       Model="UNKOWN"
     }
@@ -61,7 +62,7 @@ app.get("/api/availList", (req, res) => {
    
     if(!cacheArray.includes(SKU) && Name.includes("Renewed")){
       cacheArray.push(SKU)
-      availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery})
+      availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost})
     }
 
   })
@@ -79,6 +80,7 @@ app.get("/api/availList", (req, res) => {
     var FinalModel = element.FinalModel
     var Grade = element.Grade
     var Battery = element.Battery
+    var AVGCost = element.AVGCost
 
     availResponse.Items.forEach(elementTwo => {
       var SKUBulk = elementTwo.SKU
@@ -99,7 +101,7 @@ app.get("/api/availList", (req, res) => {
     TotalQTY = CageQTY+RefurbCageTwoQTY
 
     if(CageQTY != "" || RefurbCageTwoQTY != ""){
-      availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery})
+      availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost})
     }
 
   });

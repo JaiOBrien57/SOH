@@ -109,7 +109,7 @@ export const Routes_Import = () =>{
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h5" noWrap component="div" sx={{color: "black"}}>
+          <Typography variant="h5" noWrap component="div" sx={{color: "#4b5563"}}>
             Stock On Hand
           </Typography>
           <TopDropDowns/>
@@ -169,7 +169,7 @@ export const Routes_Import = () =>{
 
 
 
-    //Render Devices SOH Page
+    //Render SOH_Devices Page
     function SOH_Devices_Render(){
       const theme = useTheme();
       const [open, setOpen] = React.useState(false);
@@ -212,7 +212,7 @@ export const Routes_Import = () =>{
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h5" noWrap component="div" sx={{color: "black"}}>
+            <Typography variant="h5" noWrap component="div" sx={{color: "#4b5563"}}>
               Stock On Hand
             </Typography>
             <TopDropDowns/>
@@ -247,7 +247,7 @@ export const Routes_Import = () =>{
             </ListItem>
           </List>
           <List>
-            <ListItem key={"Devices"} disablePadding>
+            <ListItem key={"Devices"} disablePadding className="text-teal-500">
               <ListItemButton onClick={handleSOH_DevicesClick}>
                 <ListItemIcon>
                 <ArrowRightIcon/>
@@ -316,7 +316,7 @@ export const Routes_Import = () =>{
 
 
 
-    //Render All Devices SOH Page
+    //Render SOH_All_Devices Page
     function SOH_All_Devices_Render(){
       const theme = useTheme();
       const [open, setOpen] = React.useState(false);
@@ -359,7 +359,7 @@ export const Routes_Import = () =>{
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h5" noWrap component="div" sx={{color: "black"}}>
+            <Typography variant="h5" noWrap component="div" sx={{color: "#4b5563"}}>
               Stock On Hand
             </Typography>
             <TopDropDowns/>
@@ -433,7 +433,7 @@ export const Routes_Import = () =>{
             </ListItem>
           </List>
           <List>
-            <ListItem key={"AllDevices"} disablePadding>
+            <ListItem key={"AllDevices"} disablePadding className="text-teal-500">
               <ListItemButton onClick={handleSOH_All_DevicesClick}>
                 <ListItemIcon>
                 <ArrowRightIcon/>
