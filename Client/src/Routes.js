@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom"
 import SOH_Devices from "./Pages/SOH_Page/SOH_Devices"
 import SOH_Devices_All_Devices from "./Pages/SOH_Page/SOH_All_Devices"
+import SOH_Faulty_Devices from "./Pages/SOH_Page/SOH_Faulty_Devices"
 import React, { useEffect, useState } from "react";
 import TopDropDowns from "./Pages/TopDropDowns";
 import Button from "react-bootstrap/Button";
@@ -110,7 +111,7 @@ export const Routes_Import = () =>{
             <MenuIcon />
           </IconButton>
           <Typography variant="h5" noWrap component="div" sx={{color: "#4b5563"}}>
-            Stock On Hand
+            Dashboard
           </Typography>
           <TopDropDowns/>
         </Toolbar>
@@ -190,6 +191,13 @@ export const Routes_Import = () =>{
         let path = `/SOH_Devices`; 
         navigate(path);
       }
+
+       //Handle SOH_Faulty_Devices Click Go To
+       const handleSOH_Faulty_DevicesClick = () =>{
+        setAnchorEl(null);
+        let path = `/SOH_Faulty_Devices`; 
+        navigate(path);
+      }
       
       //Handle SOH_All_Devices Click Go To
       const handleSOH_All_DevicesClick = () =>{
@@ -247,12 +255,22 @@ export const Routes_Import = () =>{
             </ListItem>
           </List>
           <List>
-            <ListItem key={"Devices"} disablePadding className="text-teal-500">
+            <ListItem key={"RenewedDevices"} disablePadding className="text-teal-500">
               <ListItemButton onClick={handleSOH_DevicesClick}>
                 <ListItemIcon>
                 <ArrowRightIcon/>
                 </ListItemIcon>
-                <ListItemText primary={"Devices"} />
+                <ListItemText primary={"Renewed Devices"} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+          <List>
+            <ListItem key={"FaultyDevices"} disablePadding>
+              <ListItemButton onClick={handleSOH_Faulty_DevicesClick}>
+                <ListItemIcon>
+                <ArrowRightIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Faulty Devices"} />
               </ListItemButton>
             </ListItem>
           </List>
@@ -316,13 +334,13 @@ export const Routes_Import = () =>{
 
 
 
-    //Render SOH_All_Devices Page
-    function SOH_All_Devices_Render(){
+    //Render SOH_Faulty_Devices Page
+    function SOH_Faulty_Devices_Render(){
       const theme = useTheme();
       const [open, setOpen] = React.useState(false);
       const [anchorEl, setAnchorEl] = React.useState(null);
       let navigate = useNavigate(); 
-
+    
       const handleDrawerOpen = () => {
         setOpen(true);
       };
@@ -335,6 +353,13 @@ export const Routes_Import = () =>{
       const handleSOH_DevicesClick = () =>{
         setAnchorEl(null);
         let path = `/SOH_Devices`; 
+        navigate(path);
+      }
+
+      //Handle SOH_Faulty_Devices Click Go To
+      const handleSOH_Faulty_DevicesClick = () =>{
+        setAnchorEl(null);
+        let path = `/SOH_Faulty_Devices`; 
         navigate(path);
       }
       
@@ -394,12 +419,186 @@ export const Routes_Import = () =>{
             </ListItem>
           </List>
           <List>
-            <ListItem key={"Devices"} disablePadding>
+            <ListItem key={"RenewedDevices"} disablePadding>
               <ListItemButton onClick={handleSOH_DevicesClick}>
                 <ListItemIcon>
                 <ArrowRightIcon/>
                 </ListItemIcon>
-                <ListItemText primary={"Devices"} />
+                <ListItemText primary={"Renewed Devices"} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+          <List>
+            <ListItem key={"FaultyDevices"} disablePadding className="text-teal-500">
+              <ListItemButton onClick={handleSOH_Faulty_DevicesClick}>
+                <ListItemIcon>
+                <ArrowRightIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Faulty Devices"} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+          <List>
+            <ListItem key={"Parts"} disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                <ArrowRightIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Parts"} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+          <List>
+            <ListItem key={"Accessories"} disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                <ArrowRightIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Accessories"} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+          <Divider />
+          <List>
+            <ListItem key={"StockManagement"} className="pl-2">
+                <ListItemIcon>
+                  <InventoryIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Stock Management:"} />
+            </ListItem>
+          </List>
+          <List>
+            <ListItem key={"AllDevices"} disablePadding>
+              <ListItemButton onClick={handleSOH_All_DevicesClick}>
+                <ListItemIcon>
+                <ArrowRightIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"All Devices"} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+          <List>
+            <ListItem key={"AllParts"} disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                <ArrowRightIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"All Parts"} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </Drawer>
+        <Main open={open}>
+          <DrawerHeader />
+          <SOH_Faulty_Devices/>
+        </Main>
+      </Box>
+        )
+    }
+
+
+
+    //Render SOH_All_Devices Page
+    function SOH_All_Devices_Render(){
+      const theme = useTheme();
+      const [open, setOpen] = React.useState(false);
+      const [anchorEl, setAnchorEl] = React.useState(null);
+      let navigate = useNavigate(); 
+
+      const handleDrawerOpen = () => {
+        setOpen(true);
+      };
+    
+      const handleDrawerClose = () => {
+        setOpen(false);
+      };  
+
+      //Handle SOH_Devices Click Go To
+      const handleSOH_DevicesClick = () =>{
+        setAnchorEl(null);
+        let path = `/SOH_Devices`; 
+        navigate(path);
+      }
+
+       //Handle SOH_Faulty_Devices Click Go To
+       const handleSOH_Faulty_DevicesClick = () =>{
+        setAnchorEl(null);
+        let path = `/SOH_Faulty_Devices`; 
+        navigate(path);
+      }
+      
+      //Handle SOH_All_Devices Click Go To
+      const handleSOH_All_DevicesClick = () =>{
+        setAnchorEl(null);
+        let path = `/SOH_All_Devices`; 
+        navigate(path);
+      }
+  
+      return (
+        <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <AppBar position="fixed" open={open} sx={{backgroundColor: "white" }}>
+          <Toolbar>
+            <IconButton
+              color="black"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              sx={{ mr: 2, ...(open && { display: 'none' }) }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h5" noWrap component="div" sx={{color: "#4b5563"}}>
+              Stock On Hand
+            </Typography>
+            <TopDropDowns/>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            '& .MuiDrawer-paper': {
+              width: drawerWidth,
+              boxSizing: 'border-box',
+              backgroundColor: "white",
+            },
+          }}
+          variant="persistent"
+          anchor="left"
+          open={open}
+        >
+          <DrawerHeader>
+            <IconButton onClick={handleDrawerClose}>
+              {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            </IconButton>
+          </DrawerHeader>
+          <Divider />
+          <List>
+            <ListItem key={"SalesHeader"} className="pl-2">
+                <ListItemIcon>
+                  <SellIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Sales:"} />
+            </ListItem>
+          </List>
+          <List>
+            <ListItem key={"RenewedDevices"} disablePadding>
+              <ListItemButton onClick={handleSOH_DevicesClick}>
+                <ListItemIcon>
+                <ArrowRightIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Renewed Devices"} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+          <List>
+            <ListItem key={"Faulty Devices"} disablePadding>
+              <ListItemButton onClick={handleSOH_Faulty_DevicesClick}>
+                <ListItemIcon>
+                <ArrowRightIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Faulty Devices"} />
               </ListItemButton>
             </ListItem>
           </List>
@@ -469,6 +668,7 @@ export const Routes_Import = () =>{
         <div className="App">
           <Routes>
             <Route path="/SOH_Devices" element={<SOH_Devices_Render/>} />
+            <Route path="/SOH_Faulty_Devices" element={<SOH_Faulty_Devices_Render/>} />
             <Route path="/SOH_All_Devices" element={<SOH_All_Devices_Render/>} />
             <Route path="/" element={<HomePageNoLink/>} />
           </Routes>

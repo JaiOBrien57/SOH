@@ -50,9 +50,9 @@ app.get("/api/renewedDevicesList", (req, res) => {
     var Grade = element.Product.AdditionalAttribute7
   
     if (Model.includes("iPad")) {
-      var FinalModel = Brand+" "+Model+" "+GB+" "+Connectivity+" - "+Colour
+      var FinalModel = Brand+" "+Model+" "+GB+" "+Connectivity
     }if (!Model.includes("iPad")) {
-      var FinalModel = Brand+" "+Model+" "+GB+" - "+Colour
+      var FinalModel = Brand+" "+Model+" "+GB
     }
 
     if (Battery == "New Battery") {
@@ -62,7 +62,7 @@ app.get("/api/renewedDevicesList", (req, res) => {
    
     if(!cacheArray.includes(SKU) && Name.includes("Renewed")){
       cacheArray.push(SKU)
-      availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost})
+      availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
     }
 
   })
@@ -81,6 +81,7 @@ app.get("/api/renewedDevicesList", (req, res) => {
     var Grade = element.Grade
     var Battery = element.Battery
     var AVGCost = element.AVGCost
+    var Colour = element.Colour
 
     availResponse.Items.forEach(elementTwo => {
       var SKUBulk = elementTwo.SKU
@@ -101,7 +102,7 @@ app.get("/api/renewedDevicesList", (req, res) => {
     TotalQTY = CageQTY+RefurbCageTwoQTY
 
     if(CageQTY != "" || RefurbCageTwoQTY != ""){
-      availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost})
+      availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
     }
 
   });

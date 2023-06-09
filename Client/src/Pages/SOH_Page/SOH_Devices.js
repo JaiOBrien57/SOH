@@ -1,5 +1,5 @@
 import { CSVLink, CSVDownload } from "react-csv";
-import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams,GridCellEditStopReasons,GridValueGetterParams,GridValueSetterParams  } from '@mui/x-data-grid';
+import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams,GridCellEditStopReasons,GridValueGetterParams,GridValueSetterParams,gridPageCountSelector,GridPagination,useGridApiContext,useGridSelector  } from '@mui/x-data-grid';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -21,6 +21,10 @@ import DownloadIcon from '@mui/icons-material/Download';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import MuiPagination from '@mui/material/Pagination';
+import TablePagination from '@mui/material/TablePagination';
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import IconButton from '@mui/material/IconButton';
 
 const theme = createTheme({
   //Main Themes
@@ -28,7 +32,7 @@ const theme = createTheme({
     danger: '#e53e3e',
   },
   palette: {
-    primary: {
+    secondary: {
       main: '#0971f1',
       darker: '#053e85',
     },
@@ -37,13 +41,18 @@ const theme = createTheme({
       darker: '#053e85',
       contrastText: '#fff',
     },
+    primary: {
+      main: '#14b8a6',
+      darker: '#042f2e',
+      contrastText: '#fff',
+    },
   },
 });
 
 export default function DataTable() {
 
 //Setup React variables
-const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":"","TotalQTY":"","FinalModel":"","Grade":"","Battery":"","AVGCost":""}]);
+const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":"","TotalQTY":"","FinalModel":"","Grade":"","Battery":"","AVGCost":"","Colour":""}]);
 const [selectedDataTable, SetSelectedDataTable] = React.useState([]);
 const [contentLoaded, SetContentLoaded] = React.useState(true)
 const [mainTableRows, SetMainTableRows] = React.useState([{"id":""}])
@@ -72,7 +81,7 @@ useEffect(() => {
 //Set the rows state for the Main Table
 useEffect(() => {
   function SetMainTableRowsData() {
-    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost}))
+    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost,"Colour":row.Colour}))
     SetMainTableRows(rows)
     console.log(rows)
   }
@@ -104,7 +113,8 @@ const currencyFormatter = (params) => {
 //Setup the columns for SOH Table
 const columns = [
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", renderCell:rowData=><Link href={`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`} target="_blank">{rowData.row.SKU}</Link>},
-  { field: 'FinalModel', headerName: 'Model 📱', width: 400, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
+  { field: 'FinalModel', headerName: 'Model 📱', width: 350, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
+  { field: 'Colour', headerName: 'Colour', width: 130, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
   { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,align: "center"},
   { field: 'Battery', headerName: 'Battery', width: 70, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,align: "center"},
   { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
@@ -221,11 +231,16 @@ const handleCloseAlert = (event, reason) => {
 //Menu For Main SOH Table
 function CustomToolbar() {
   return (
+    <ThemeProvider theme={theme}>
     <GridToolbarContainer>
+    <div style={{height: "100%", width: "4%", float: "left"}} className="py-2 mr-4 ml-2">
+      <Button size="small" onClick={""} variant="contained" color="primary" startIcon={<AddBoxIcon />}>ADD</Button>
+    </div>
       <GridToolbarExport/>
       <GridToolbarColumnsButton />
       <GridToolbarFilterButton />
     </GridToolbarContainer>
+    </ThemeProvider>
   );
 }
 
@@ -238,6 +253,44 @@ function CustomToolbarSelect() {
     </GridToolbarContainer>
   );
 }
+
+//Custom Footer For Main Table
+function Pagination({ page, onPageChange, className }) {
+  const apiRef = useGridApiContext();
+  const pageCount = useGridSelector(apiRef, gridPageCountSelector);
+
+  return (
+    <MuiPagination
+      color="primary"
+      className={className}
+      count={pageCount}
+      page={page + 1}
+      onChange={(event, newPage) => {
+        onPageChange(event, newPage - 1);
+      }}
+    />
+  );
+}
+
+function CustomPagination(props) {
+  return (
+  <ThemeProvider theme={theme}>
+  <div style={{width: "89%"}}>
+
+  <div style={{height: "100%", width: "50%", float: "right"}} className="">
+    <GridPagination ActionsComponent={Pagination} {...props} />
+  </div>
+
+  <div style={{height: "100%", width: "10%", float: "left"}} className="py-2">
+  <Typography>ADD SUMS HERE</Typography >
+  </div>
+
+  </div>
+  </ThemeProvider>
+  )
+}
+
+
 
 //Hidden column filter fields from main table
 const hiddenFieldsMainTable = ['id', 'IDDear',"TotalQTY"];
@@ -258,7 +311,7 @@ const getTogglableColumns = (columns) => {
     <div style={{ height: "100%", width: '78%', float: "left"}} className='flexParent pr-4'>
 
     <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
-        Devices
+        Renewed Devices
       </div>
       
       <DataGrid
@@ -278,34 +331,33 @@ const getTogglableColumns = (columns) => {
             color: '#16a34a',
             fontWeight: '500',
           },
+          '& .css-9etbgb-MuiButtonBase-root-MuiPaginationItem-root.Mui-selected': {
+            color: "#ffffff"
+          },
         }}
+        pagination
         slots={{
           toolbar: CustomToolbar,
           loadingOverlay: LinearProgress,
+          pagination: CustomPagination,
         }}
         slotProps={{
           columnsPanel: {
             getTogglableColumns,
           },
         }}
+        pageSizeOptions={[]}
         loading={contentLoaded}
         rows={mainTableRows}
         columns={columns}
         initialState={{
-          pagination: {
-            paginationModel: { page: 0, pageSize: 25 },
-          },
+            ...mainTableRows.initialState,
+          pagination: { paginationModel: { pageSize: 100 } },
           columns: {
             columnVisibilityModel: {
             },
           },
-          aggregation: {
-            model: {
-              DealerPrice: 'sum',
-            },
-          },
         }}
-        pageSizeOptions={[25 ,50, 100]}
         checkboxSelection
         density="compact"
         disableRowSelectionOnClick 
@@ -342,8 +394,8 @@ const getTogglableColumns = (columns) => {
       aria-label="Disabled elevation buttons"
       style={{width: "48%",height: "100%",float: "right"}}
     >
-      <LoadingButton onClick={handlePushDear} loading={pushDearButtonState} variant="contained" color="secondary" style={{width: "50%"}} loadingPosition="start" startIcon={<DoubleArrowIcon />}>PUSH</LoadingButton>
-      <LoadingButton onClick={handleDownloadDear} loading={downloadDearButtonState} variant="contained" color="primary" style={{width: "50%"}} loadingPosition="start" startIcon={<DownloadIcon />}>CSV</LoadingButton>
+      <LoadingButton onClick={handlePushDear} loading={pushDearButtonState} variant="contained" color="primary" style={{width: "50%"}} loadingPosition="start" startIcon={<DoubleArrowIcon />}>PUSH</LoadingButton>
+      <LoadingButton onClick={handleDownloadDear} loading={downloadDearButtonState} variant="contained" color="secondary" style={{width: "50%"}} loadingPosition="start" startIcon={<DownloadIcon />}>CSV</LoadingButton>
     </ButtonGroup>
     </ThemeProvider>
       </div>
@@ -369,7 +421,7 @@ const getTogglableColumns = (columns) => {
         columns={columnsSelected}
         initialState={{
           pagination: {
-            paginationModel: { page: 0, pageSize: 25 },
+            paginationModel: { page: 0, pageSize: 100 },
           },
           columns: {
             columnVisibilityModel: {
@@ -382,7 +434,7 @@ const getTogglableColumns = (columns) => {
             },
           },
         }}
-        pageSizeOptions={[25 ,50, 100]}
+        pageSizeOptions={[]}
         density="compact"
         disableRowSelectionOnClick 
         onRowSelectionModelChange={(ids) => onRowsSelectionHandler(ids)}
