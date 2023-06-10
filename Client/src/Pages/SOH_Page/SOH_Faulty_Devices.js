@@ -1,5 +1,5 @@
 import { CSVLink, CSVDownload } from "react-csv";
-import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams,GridCellEditStopReasons,GridValueGetterParams,GridValueSetterParams,gridPageCountSelector,GridPagination,useGridApiContext,useGridSelector  } from '@mui/x-data-grid';
+import { DataGrid,GridActionsCellItem, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton, GridToolbarColumnsButton,GridCellParams,GridCellEditStopReasons,GridValueGetterParams,GridValueSetterParams,gridPageCountSelector,GridPagination,useGridApiContext,useGridSelector,useGridApiRef  } from '@mui/x-data-grid';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -25,6 +25,10 @@ import MuiPagination from '@mui/material/Pagination';
 import TablePagination from '@mui/material/TablePagination';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import IconButton from '@mui/material/IconButton';
+import CancelIcon from '@mui/icons-material/Close';
+import ClearIcon from '@mui/icons-material/Clear';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import DisabledByDefaultIcon from '@mui/icons-material/DisabledByDefault';
 
 const theme = createTheme({
   //Main Themes
@@ -55,8 +59,8 @@ export default function DataTable() {
 const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":"","TotalQTY":"","FinalModel":"","Grade":"","Battery":"","AVGCost":"","Colour":""}]);
 const [selectedDataTable, SetSelectedDataTable] = React.useState([]);
 const [contentLoaded, SetContentLoaded] = React.useState(true)
-const [mainTableRows, SetMainTableRows] = React.useState([{"id":""}])
-const [selectedTableRows, SetSelectedTableRows] = React.useState([{"id":""}])
+const [mainTableRows, SetMainTableRows] = React.useState([])
+const [selectedTableRows, SetSelectedTableRows] = React.useState([])
 const [saleTransferButton, SetSaleTransferButton] = React.useState('');
 const [pushDearButtonState, SetPushDearButtonState] = React.useState(false);
 const [downloadDearButtonState, SetDownloadDearButtonState] = React.useState(false);
@@ -65,6 +69,8 @@ const [newSalesOrder, setNewSalesOrder] = React.useState("")
 const [newSaleID, SetNewSaleID] = React.useState("")
 const [dearPushStatus, SetDearPushStatus] = React.useState(0)
 const delay = ms => new Promise(res => setTimeout(res, ms));
+const apiRefMainTable = useGridApiRef();
+const apiRefSelectTable = useGridApiRef();
 
 //Get the avail List
 useEffect(() => {
@@ -89,15 +95,23 @@ useEffect(() => {
 }, [availData]);
 
 
-//Set the rows state for the selected Table
-useEffect(() => {
-  function SetSelectedTableRowsData() {
-    const rows = selectedDataTable.map((row,index)=>({"id": index,"IDDear":row.IDDear,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY}))
-    SetSelectedTableRows(rows)
-    console.log(rows)
-  }
-  SetSelectedTableRowsData();
-}, [selectedDataTable]);
+//Add the rows for the selected Table ********Make alert popup for excluded SKU's********
+const addSelectedToTable = (event) => {
+  const NewRowsToAdd = selectedDataTable.map((row)=>({"id": row.id,"IDDear":row.IDDear,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY}))
+  const ExistingIDsInSelectRow = selectedTableRows.map((row) => row.id)
+  const NewRowsExcludingExisting = NewRowsToAdd.filter((row) => !ExistingIDsInSelectRow.includes(row.id))
+  const ExcludedRowIDs = NewRowsToAdd.filter((row) => ExistingIDsInSelectRow.includes(row.id))
+  SetSelectedTableRows(current  => [...current,...NewRowsExcludingExisting] );
+  NewRowsToAdd.map((row) => apiRefMainTable.current.selectRow(row.id,false,true))
+  console.log("Excluding These:",ExcludedRowIDs,"Adding these into select:",NewRowsExcludingExisting)
+}
+
+//Delete the rows for selected table ****************Need to Fix double click from erroring out****************
+const deleteRowSelectTable = (rowToDelete) => {
+    const newSelectDataAfterDelete = selectedTableRows.filter(row => row.id !== rowToDelete)
+    SetSelectedTableRows(newSelectDataAfterDelete)
+    console.log("Deleting this id:",rowToDelete) 
+}
 
 
 //Format as currency
@@ -112,24 +126,24 @@ const currencyFormatter = (params) => {
 
 //Setup the columns for SOH Table
 const columns = [
-  { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", renderCell:rowData=><Link href={`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`} target="_blank">{rowData.row.SKU}</Link>},
+  { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",headerAlign: 'center',align: "center", renderCell:rowData=><Link href={`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`} target="_blank">{rowData.row.SKU}</Link>},
   { field: 'FinalModel', headerName: 'Model 📱', width: 350, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
-  { field: 'Colour', headerName: 'Colour', width: 130, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
-  { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,align: "center"},
-  { field: 'Battery', headerName: 'Battery', width: 70, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,align: "center"},
-  { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
-  { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100, align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
-  { field: 'AVGCost', headerName: 'AVG (ex)', type: 'number', width: 80, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
-  { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90, align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
+  { field: 'Colour', headerName: 'Colour', width: 130, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'Battery', headerName: 'Battery', width: 70, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
+  { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
+  { field: 'AVGCost', headerName: 'AVG (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
+  { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
 ];
 
 //Setup the columns for Selected Table
 const columnsSelected = [
-  { field: 'id', headerName: '#', width: 40, headerClassName: "bg-white text-black", cellClassName: "text-black", disableColumnMenu: true, sortable: false,disableExport: true, align: "left"},
-  { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
-  { field: 'Name', headerName: 'Name 📱', width: 600, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black"},
-  { field: 'TotalQTY', headerName: 'QTY', width: 40, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true, align: "center"},
-  { field: 'Price', headerName: 'Price (ex)', width: 90,type: 'number' ,disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true, align: "center",valueFormatter: currencyFormatter},
+  { field: 'DeleteRow',renderHeader: (params: GridColumnHeaderParams) => (<IconButton aria-label="delete"><DisabledByDefaultIcon style={{float: "left"}} sx={{ fontSize: 22 }} color="primary"/></IconButton>), width: 59, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",renderCell: rowData=> <IconButton onClick={()=>deleteRowSelectTable(rowData.row.id)} aria-label="delete"><HighlightOffIcon sx={{ fontSize: 22 }} color="primary"/></IconButton>},
+  { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",headerAlign: 'center',align: "center"},
+  { field: 'Name', headerName: 'Name 📱', width: 600, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black"},
+  { field: 'TotalQTY', headerName: 'QTY', width: 40, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true,headerAlign: 'center',align: "center"},
+  { field: 'Price', headerName: 'Price (ex)', width: 90,type: 'number' ,disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true,headerAlign: 'center',align: "center",valueFormatter: currencyFormatter},
 ];
 
 //Set the select table rows after cell edit
@@ -233,8 +247,8 @@ function CustomToolbar() {
   return (
     <ThemeProvider theme={theme}>
     <GridToolbarContainer>
-    <div style={{height: "100%", width: "4%", float: "left"}} className="py-2 mr-4 ml-2">
-      <Button size="small" onClick={""} variant="contained" color="primary" startIcon={<AddBoxIcon />}>ADD</Button>
+    <div style={{height: "100%", width: "fit-content", float: "left"}} className="py-2 pl-2 pr-1">
+      <Button size="small" onClick={addSelectedToTable} variant="contained" color="primary" startIcon={<AddBoxIcon />}>ADD</Button>
     </div>
       <GridToolbarExport/>
       <GridToolbarColumnsButton />
@@ -275,17 +289,12 @@ function Pagination({ page, onPageChange, className }) {
 function CustomPagination(props) {
   return (
   <ThemeProvider theme={theme}>
-  <div style={{width: "89%"}}>
+    
+    <Typography>ADD Price SUM HERE</Typography >
+    <Typography>ADD QTY SUM HERE</Typography >
 
-  <div style={{height: "100%", width: "50%", float: "right"}} className="">
     <GridPagination ActionsComponent={Pagination} {...props} />
-  </div>
 
-  <div style={{height: "100%", width: "10%", float: "left"}} className="py-2">
-  <Typography>ADD SUMS HERE</Typography >
-  </div>
-
-  </div>
   </ThemeProvider>
   )
 }
@@ -362,6 +371,7 @@ const getTogglableColumns = (columns) => {
         density="compact"
         disableRowSelectionOnClick 
         onRowSelectionModelChange={(ids) => onRowsSelectionHandler(ids)}
+        apiRef={apiRefMainTable}
       />
     </div>
 
@@ -438,6 +448,7 @@ const getTogglableColumns = (columns) => {
         density="compact"
         disableRowSelectionOnClick 
         onRowSelectionModelChange={(ids) => onRowsSelectionHandler(ids)}
+        apiRef={apiRefSelectTable}
       />
 
     </div>
