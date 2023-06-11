@@ -24,102 +24,107 @@ const SaleOrderURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale/orde
 //Receive the request on refresh from frontend
 app.get("/api/renewedDevicesList", (req, res) => {
   async function getAvailList(){
-  //Get the avail list
-    const availRequest = await fetch("https://api.renewablemobile.com.au/dear/productavailability?fields=ID,SKU,Name,Available,Location,Bin&Name=LIKE(Renewed)&includeproduct=true",{method: "GET", headers: {"auth":"Jindalee1!"}})
-    const availResponse = await availRequest.json()
+  try{
+    //Get the avail list
+      const availRequest = await fetch("https://api.renewablemobile.com.au/dear/productavailability?fields=ID,SKU,Name,Available,Location,Bin&Name=LIKE(Renewed)&includeproduct=true",{method: "GET", headers: {"auth":"Jindalee1!"}})
+      const availResponse = await availRequest.json()
 
-  //Loop through to get the list formatted for Dealer Cage and Refurb Cage QTY
-  //Get the unique array from avail SKU'S
-  var availUnique = []
-  var cacheArray = []
-  availResponse.Items.forEach(element => {
-    var SKU = element.SKU
-    var Name = element.Name
-    var IDDear = element.ID
-    var PriceTier1 = element.Product.PriceTier1
-    var Brand = element.Product.AdditionalAttribute1
-    var Model = element.Product.AdditionalAttribute2
-    var AVGCost = element.Product.AverageCost
-    if (Model == null || Model == "") {
-      Model="UNKOWN"
-    }
-    var GB = element.Product.AdditionalAttribute3
-    var Colour = element.Product.AdditionalAttribute4
-    var Connectivity = element.Product.AdditionalAttribute5
-    var Battery = element.Product.AdditionalAttribute6
-    var Grade = element.Product.AdditionalAttribute7
-  
-    if (Model.includes("iPad")) {
-      var FinalModel = Brand+" "+Model+" "+GB+" "+Connectivity
-    }if (!Model.includes("iPad")) {
-      var FinalModel = Brand+" "+Model+" "+GB
-    }
-
-    if (Battery == "New Battery") {
-      Battery = "100%"
-    }
-
-   
-    if(!cacheArray.includes(SKU) && Name.includes("Renewed")){
-      cacheArray.push(SKU)
-      availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
-    }
-
-  })
-
-  //Sum the unique against full array
-  var availFormatted = []
-  availUnique.forEach(element => {
-    var SKU = element.SKU
-    var Name = element.Name
-    var IDDear = element.ID
-    var CageQTY = 0
-    var RefurbCageTwoQTY = 0
-    var TotalQTY = 0
-    var DealerPrice = element.DealerPrice
-    var FinalModel = element.FinalModel
-    var Grade = element.Grade
-    var Battery = element.Battery
-    var AVGCost = element.AVGCost
-    var Colour = element.Colour
-
-    availResponse.Items.forEach(elementTwo => {
-      var SKUBulk = elementTwo.SKU
-      var AvailableQTYBulk = parseInt(elementTwo.Available)
-      var LocationBulk = elementTwo.Location
-      var BinBulk = elementTwo.Bin
-      
-      if(SKU == SKUBulk && LocationBulk == "BNE - Main Warehouse" && BinBulk == "Cage" && AvailableQTYBulk > 0){
-        CageQTY = CageQTY+AvailableQTYBulk
+    //Loop through to get the list formatted for Dealer Cage and Refurb Cage QTY
+    //Get the unique array from avail SKU'S
+    var availUnique = []
+    var cacheArray = []
+    availResponse.Items.forEach(element => {
+      var SKU = element.SKU
+      var Name = element.Name
+      var IDDear = element.ID
+      var PriceTier1 = element.Product.PriceTier1
+      var Brand = element.Product.AdditionalAttribute1
+      var Model = element.Product.AdditionalAttribute2
+      var AVGCost = element.Product.AverageCost
+      if (Model == null || Model == "") {
+        Model="UNKOWN"
+      }
+      var GB = element.Product.AdditionalAttribute3
+      var Colour = element.Product.AdditionalAttribute4
+      var Connectivity = element.Product.AdditionalAttribute5
+      var Battery = element.Product.AdditionalAttribute6
+      var Grade = element.Product.AdditionalAttribute7
+    
+      if (Model.includes("iPad")) {
+        var FinalModel = Brand+" "+Model+" "+GB+" "+Connectivity
+      }if (!Model.includes("iPad")) {
+        var FinalModel = Brand+" "+Model+" "+GB
       }
 
-      if(SKU == SKUBulk && LocationBulk == "BNE - CAGE - Refurb 2 (106.2)" && AvailableQTYBulk > 0){
-        RefurbCageTwoQTY = RefurbCageTwoQTY+AvailableQTYBulk
-      } 
+      if (Battery == "New Battery") {
+        Battery = "100%"
+      }
+
+    
+      if(!cacheArray.includes(SKU) && Name.includes("Renewed")){
+        cacheArray.push(SKU)
+        availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
+      }
 
     })
 
-    TotalQTY = CageQTY+RefurbCageTwoQTY
+    //Sum the unique against full array
+    var availFormatted = []
+    availUnique.forEach(element => {
+      var SKU = element.SKU
+      var Name = element.Name
+      var IDDear = element.ID
+      var CageQTY = 0
+      var RefurbCageTwoQTY = 0
+      var TotalQTY = 0
+      var DealerPrice = element.DealerPrice
+      var FinalModel = element.FinalModel
+      var Grade = element.Grade
+      var Battery = element.Battery
+      var AVGCost = element.AVGCost
+      var Colour = element.Colour
 
-    if(CageQTY != "" || RefurbCageTwoQTY != ""){
-      availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
+      availResponse.Items.forEach(elementTwo => {
+        var SKUBulk = elementTwo.SKU
+        var AvailableQTYBulk = parseInt(elementTwo.Available)
+        var LocationBulk = elementTwo.Location
+        var BinBulk = elementTwo.Bin
+        
+        if(SKU == SKUBulk && LocationBulk == "BNE - Main Warehouse" && BinBulk == "Cage" && AvailableQTYBulk > 0){
+          CageQTY = CageQTY+AvailableQTYBulk
+        }
+
+        if(SKU == SKUBulk && LocationBulk == "BNE - CAGE - Refurb 2 (106.2)" && AvailableQTYBulk > 0){
+          RefurbCageTwoQTY = RefurbCageTwoQTY+AvailableQTYBulk
+        } 
+
+      })
+
+      TotalQTY = CageQTY+RefurbCageTwoQTY
+
+      if(CageQTY != "" || RefurbCageTwoQTY != ""){
+        availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
+      }
+
+    });
+
+    //Sort the array by name
+    availFormatted.sort((a,b)=>{if (a.FinalModel < b.FinalModel) {
+      return -1;
     }
-
-  });
-
-  //Sort the array by name
-  availFormatted.sort((a,b)=>{if (a.FinalModel < b.FinalModel) {
-    return -1;
-  }
-  if (a.FinalModel > b.FinalModel) {
-    return 1;
-  }
-  return 0;})
+    if (a.FinalModel > b.FinalModel) {
+      return 1;
+    }
+    return 0;})
 
 
-  //Sending results back
-    res.json(availFormatted).status(200)
-    console.log("Avail List has Been Fetched and Formatted")
+    //Sending results back
+      res.json(availFormatted).status(200)
+      console.log("Avail List has Been Fetched and Formatted")
+    }catch{
+      res.json("ERROR").status(500)
+      console.log("Avail list fetch fail")
+    }
   }
   getAvailList()
 });

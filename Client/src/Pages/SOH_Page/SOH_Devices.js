@@ -56,7 +56,7 @@ const theme = createTheme({
 export default function DataTable() {
 
 //Setup React variables
-const [availData, setAvailData] = React.useState([{"IDDear":"","SKU":"","Name":"","AvailableCage":"","AvailableRefurbCage":"","DealerPrice":"","TotalQTY":"","FinalModel":"","Grade":"","Battery":"","AVGCost":"","Colour":""}]);
+const [availData, setAvailData] = React.useState([]);
 const [selectedDataTable, SetSelectedDataTable] = React.useState([]);
 const [contentLoaded, SetContentLoaded] = React.useState(true)
 const [mainTableRows, SetMainTableRows] = React.useState([])
@@ -68,6 +68,7 @@ const [DearPushOpen, SetDearPushOpen] = React.useState(false)
 const [newSalesOrder, setNewSalesOrder] = React.useState("")
 const [newSaleID, SetNewSaleID] = React.useState("")
 const [dearPushStatus, SetDearPushStatus] = React.useState(0)
+const [dearDataFetchedStatus, SetDearDataFetchedStatus] = React.useState(0)
 const delay = ms => new Promise(res => setTimeout(res, ms));
 const apiRefMainTable = useGridApiRef();
 const apiRefSelectTable = useGridApiRef();
@@ -76,10 +77,17 @@ const apiRefSelectTable = useGridApiRef();
 useEffect(() => {
   async function FetchAvail() {
     const request = await fetch("/api/renewedDevicesList");
-    const response = await request.json();
-    setAvailData(response);
-    SetContentLoaded(false)
-    console.log(response);
+    const response = await request.json()
+    if (response === "ERROR") {
+      SetDearDataFetchedStatus(500)
+      SetDearPushOpen(true)
+      console.log("Back end Request failed")
+    }if (response !== "ERROR") {
+      SetDearDataFetchedStatus(0)
+      setAvailData(response);
+      SetContentLoaded(false)
+      console.log(response);
+    }
   }
   FetchAvail();
 }, []);
@@ -197,20 +205,27 @@ const handlePushDear = async (event) =>{
   SetPushDearButtonState(false)
 }
 
-//Handle the Alert after dear pushed
-const DearPushAlertRender = () => {
-  if (dearPushStatus == 200) {
+//Handle Popup alert
+const PopUpAlert = () => {
+  if (dearPushStatus === 200) {
     return <Snackbar open={DearPushOpen} autoHideDuration={100} anchorOrigin={{vertical: "top",horizontal: "center"}}>
     <Alert onClose={handleCloseAlert} severity="success" sx={{ width: '100%'}}>
       <AlertTitle>Success</AlertTitle>
       <Typography>Dear Order Created Successfully <Link href={`https://inventory.dearsystems.com/Sale#${newSaleID}`} target="_blank">{newSalesOrder}</Link></Typography>
     </Alert>
   </Snackbar>
-  }if (dearPushStatus != 200) {
+  }if (dearPushStatus == 500) {
     return <Snackbar open={DearPushOpen} autoHideDuration={100} anchorOrigin={{vertical: "top",horizontal: "center"}}>
     <Alert onClose={handleCloseAlert} severity="error" sx={{ width: '100%'}}>
       <AlertTitle>Error</AlertTitle>
       <Typography>Dear Order Could Not Be Made <Link href={`https://inventory.dearsystems.com/Sale#${newSaleID}`} target="_blank">{newSalesOrder}</Link></Typography>
+    </Alert>
+  </Snackbar>
+  }if (dearDataFetchedStatus === 500) {
+    return <Snackbar open={DearPushOpen} autoHideDuration={100} anchorOrigin={{vertical: "top",horizontal: "center"}}>
+    <Alert onClose={handleCloseAlert} severity="error" sx={{ width: '100%'}}>
+      <AlertTitle>Error</AlertTitle>
+      <Typography>DEAR Data Failed To Fetch, Reload Page To Try Again</Typography>
     </Alert>
   </Snackbar>
   }
@@ -318,7 +333,7 @@ const getTogglableColumns = (columns) => {
   return (
     <div style={{height: "83vh"}}>
 
-    <DearPushAlertRender/>
+    <PopUpAlert/>
     
     <div style={{ height: "100%", width: '78%', float: "left"}} className='flexParent pr-4'>
 
