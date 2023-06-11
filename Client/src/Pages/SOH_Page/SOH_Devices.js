@@ -30,6 +30,8 @@ import ClearIcon from '@mui/icons-material/Clear';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import DisabledByDefaultIcon from '@mui/icons-material/DisabledByDefault';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 
 const theme = createTheme({
   //Main Themes
@@ -287,7 +289,7 @@ function CustomToolbarSelect() {
       <GridToolbarExport />
       <GridToolbarColumnsButton />
     <div style={{height: "100%", width: "fit-content", float: "right"}} className="py-2">
-      <IconButton onClick={handleExpandSelectTable} color="primary" size="small" aria-label="expand"><AspectRatioIcon /></IconButton>
+      <IconButton onClick={handleExpandSelectTable} color="primary" size="small" aria-label="expand"><OpenOrCloseIcon/></IconButton>
     </div>
     </GridToolbarContainer>
     </ThemeProvider>
@@ -296,13 +298,21 @@ function CustomToolbarSelect() {
 
 //Handle Expand Button Click From Select Table
 const handleExpandSelectTable = (event) => {
-  if (selectTableExpandStatus == false) {
+  if (selectTableExpandStatus === false) {
     SetTableSizing({"MainTableSize":"38%","SelectTableSize":"62%"})
     SetSelectTableExpandStatus(true)
-  }if (selectTableExpandStatus == true) {
+  }if (selectTableExpandStatus === true) {
     SetTableSizing({"MainTableSize":"78%","SelectTableSize":"22%"})
     SetSelectTableExpandStatus(false)
   }
+}
+
+const OpenOrCloseIcon = () => {
+  if (selectTableExpandStatus === false) {
+  return <OpenInFullIcon size="small"/>
+  }if (selectTableExpandStatus === true) {
+    return <CloseFullscreenIcon size="small"/>
+    }
 }
 
 //Custom Footer For Main Table
