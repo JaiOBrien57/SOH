@@ -29,6 +29,7 @@ import CancelIcon from '@mui/icons-material/Close';
 import ClearIcon from '@mui/icons-material/Clear';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import DisabledByDefaultIcon from '@mui/icons-material/DisabledByDefault';
+import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 
 const theme = createTheme({
   //Main Themes
@@ -69,6 +70,8 @@ const [newSalesOrder, setNewSalesOrder] = React.useState("")
 const [newSaleID, SetNewSaleID] = React.useState("")
 const [dearPushStatus, SetDearPushStatus] = React.useState(0)
 const [dearDataFetchedStatus, SetDearDataFetchedStatus] = React.useState(0)
+const [TableSizing, SetTableSizing] = React.useState({"MainTableSize":"78%","SelectTableSize":"22%"})
+const [selectTableExpandStatus, SetSelectTableExpandStatus] = React.useState(false)
 const delay = ms => new Promise(res => setTimeout(res, ms));
 const apiRefMainTable = useGridApiRef();
 const apiRefSelectTable = useGridApiRef();
@@ -279,11 +282,27 @@ function CustomToolbar() {
 //Menu For Selected Table
 function CustomToolbarSelect() {
   return (
+    <ThemeProvider theme={theme}>
     <GridToolbarContainer>
       <GridToolbarExport />
       <GridToolbarColumnsButton />
+    <div style={{height: "100%", width: "fit-content", float: "right"}} className="py-2">
+      <IconButton onClick={handleExpandSelectTable} color="primary" size="small" aria-label="expand"><AspectRatioIcon /></IconButton>
+    </div>
     </GridToolbarContainer>
+    </ThemeProvider>
   );
+}
+
+//Handle Expand Button Click From Select Table
+const handleExpandSelectTable = (event) => {
+  if (selectTableExpandStatus == false) {
+    SetTableSizing({"MainTableSize":"38%","SelectTableSize":"62%"})
+    SetSelectTableExpandStatus(true)
+  }if (selectTableExpandStatus == true) {
+    SetTableSizing({"MainTableSize":"78%","SelectTableSize":"22%"})
+    SetSelectTableExpandStatus(false)
+  }
 }
 
 //Custom Footer For Main Table
@@ -335,7 +354,7 @@ const getTogglableColumns = (columns) => {
 
     <PopUpAlert/>
     
-    <div style={{ height: "100%", width: '78%', float: "left"}} className='flexParent pr-4'>
+    <div style={{ height: "100%", width: `${TableSizing.MainTableSize}`, float: "left"}} className='flexParent pr-4'>
 
     <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
         All Devices
@@ -394,7 +413,7 @@ const getTogglableColumns = (columns) => {
     </div>
 
 
-    <div style={{ height: "100%", width: '22%', float: 'left'}} className='flexParent'>
+    <div style={{ height: "100%", width: `${TableSizing.SelectTableSize}`, float: 'left'}} className='flexParent'>
 
     <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
         Selected
