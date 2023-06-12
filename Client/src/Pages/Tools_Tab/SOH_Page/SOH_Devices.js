@@ -56,7 +56,7 @@ const theme = createTheme({
   },
 });
 
-export default function DataTable() {
+export default function SOH_Devices() {
 
 //Setup React variables
 const [availData, setAvailData] = React.useState([]);

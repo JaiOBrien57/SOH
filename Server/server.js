@@ -178,6 +178,59 @@ runSelectReq()
 });
 
 
+//Get the Prod List
+app.get("/api/prodList" ,(req,res) => {
+  async function getProdList(){
+    try{
+    //Get the prod list
+    const prodRequest = await fetch("https://api.renewablemobile.com.au/dear/product/?fields=SKU,Name,PriceTier1,AdditionalAttribute1,AdditionalAttribute2,AdditionalAttribute3,AdditionalAttribute4,AdditionalAttribute5,AdditionalAttribute6,AdditionalAttribute7&Name=LIKE(Renewed)",{method: "GET", headers: {"auth":"Jindalee1!"}})
+    const prodResposne = await prodRequest.json()
+    //Format the prod list
+    const ProdListFormatted = prodResposne.Items
+    console.log("Prod List Retrieved Successfully")
+    //Send response back to frontend
+    res.json(ProdListFormatted).status(200)
+    }catch{
+      res.json("ERROR").status(500)
+    }
+    }
+    getProdList()
+})
+
+
+//Get the GSM Arena Device List
+app.get("/api/gsmArenaDeviceList", (req,res) => {
+  async function getGSMArenaDeviceList(){
+    try{
+    //Get the GSM Arena List
+    const gsmRequest = await fetch("https://script.google.com/macros/s/AKfycbxNu27V2Y2LuKUIQMK8lX1y0joB6YmG6hUwB1fNeVbgzEh22TcDGrOak03Fk3uBHmz-/exec?route=device-list",{method: "GET", headers: {}})
+    const gsmResposne = await gsmRequest.json()
+    //Format GSM Arena List 
+    const gsmListExpanded = gsmResposne.data
+    const gsmListFormatted = []
+    
+    gsmListExpanded.forEach((row)=>{
+      const deviceList = row.device_list
+      
+      deviceList.forEach((rowNew)=>{
+        const deviceName = rowNew.device_name
+        const deviceKey = rowNew.key
+        gsmListFormatted.push({"Model":deviceName,"GSMKey":deviceKey})
+      })
+    })
+
+    console.log("GSM Arena Device List Retrieved Successfully")
+    //Send response back to frontend
+    res.json(gsmListFormatted).status(200)
+    }catch (error){
+      console.log("GSM ERROR FETCHING:",error)
+      res.json("ERROR").status(500)
+    }
+    }
+    getGSMArenaDeviceList()
+})
+
+
 
 //Launch the backend server
 app.listen(5000, () => {

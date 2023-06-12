@@ -54,6 +54,20 @@ export default function TopDropDowns() {
     navigate(path);
   };
 
+  //Handle On Close for Product Management Page
+  const handleCloseProductManagement = () => {
+    setAnchorElPricing(null);
+    let path = `/Prod_Creator`; 
+    navigate(path);
+  };
+
+  //Handle On Close for Google Sheets
+  const handleCloseGoogleSheets = () => {
+    setAnchorElPricing(null);
+    let path = `/Google_Sheets`; 
+    navigate(path);
+  };
+
   //Handle Click to Home Page
   const handleHomePageClick = () =>{
     setAnchorElPricing(null);
@@ -61,8 +75,6 @@ export default function TopDropDowns() {
     navigate(path);
   }
  
-
-
   
   //Main HTML
   return (
@@ -129,6 +141,23 @@ export default function TopDropDowns() {
           </ListItemIcon>
           <ListItemText>SOH</ListItemText>
           </MenuItem>
+          <Divider />
+
+        <MenuItem dense={true} onClick={handleCloseProductManagement}>
+        <ListItemIcon>
+        <ArrowRightIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Product Management</ListItemText>
+          </MenuItem>
+          <Divider />
+
+          <MenuItem dense={true} onClick={handleCloseGoogleSheets}>
+        <ListItemIcon>
+        <ArrowRightIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Google Sheets</ListItemText>
+          </MenuItem>
+
       </Menu>
 
       <Button

@@ -1,7 +1,8 @@
 import { Routes, Route } from "react-router-dom"
-import SOH_Devices from "./Pages/SOH_Page/SOH_Devices"
-import SOH_Devices_All_Devices from "./Pages/SOH_Page/SOH_All_Devices"
-import SOH_Faulty_Devices from "./Pages/SOH_Page/SOH_Faulty_Devices"
+import SOH_Devices from "./Pages/Tools_Tab/SOH_Page/SOH_Devices"
+import SOH_Devices_All_Devices from "./Pages/Tools_Tab/SOH_Page/SOH_All_Devices"
+import SOH_Faulty_Devices from "./Pages/Tools_Tab/SOH_Page/SOH_Faulty_Devices"
+import Prod_Creator from "./Pages/Tools_Tab/Products_Management_Page/Prod_Creator"
 import React, { useEffect, useState } from "react";
 import TopDropDowns from "./Pages/TopDropDowns";
 import Button from "react-bootstrap/Button";
@@ -662,14 +663,190 @@ export const Routes_Import = () =>{
 
 
 
+    //Render Prod Creator Page
+    function Prod_Creator_Render(){
+        const theme = useTheme();
+        const [open, setOpen] = React.useState(false);
+        const [anchorEl, setAnchorEl] = React.useState(null);
+    
+        const handleDrawerOpen = () => {
+        setOpen(true);
+        };
+    
+        const handleDrawerClose = () => {
+        setOpen(false);
+        };  
+
+        return (
+        <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <AppBar position="fixed" open={open} sx={{backgroundColor: "white" }}>
+            <Toolbar>
+            <IconButton
+                color="black"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                sx={{ mr: 2, ...(open && { display: 'none' }) }}
+            >
+                <MenuIcon />
+            </IconButton>
+            <Typography variant="h5" noWrap component="div" sx={{color: "#4b5563"}}>
+                Google Sheets
+            </Typography>
+            <TopDropDowns/>
+            </Toolbar>
+        </AppBar>
+        <Drawer
+            sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            '& .MuiDrawer-paper': {
+                width: drawerWidth,
+                boxSizing: 'border-box',
+                backgroundColor: "white",
+            },
+            }}
+            variant="persistent"
+            anchor="left"
+            open={open}
+        >
+            <DrawerHeader>
+            <IconButton onClick={handleDrawerClose}>
+                {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            </IconButton>
+            </DrawerHeader>
+            <Divider />
+            <List>
+            <ListItem key={"Nothing1"} disablePadding>
+                <ListItemButton>
+                <ListItemIcon>
+                    <InboxIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Nothing1"} />
+                </ListItemButton>
+            </ListItem>
+            </List>
+            <Divider />
+            <List>
+            <ListItem key={"Nothing2"} disablePadding>
+                <ListItemButton>
+                <ListItemIcon>
+                    <InboxIcon />
+                </ListItemIcon>
+                <ListItemText primary={"Nothing2"} />
+                </ListItemButton>
+            </ListItem>
+            </List>
+        </Drawer>
+        <Main open={open}>
+            <DrawerHeader />
+            <Prod_Creator/>
+        </Main>
+        </Box>
+        )
+    }
+
+
+
+    //Render The Google Sheets Page
+    function Google_Sheets_Render(){
+        const theme = useTheme();
+        const [open, setOpen] = React.useState(false);
+        const [anchorEl, setAnchorEl] = React.useState(null);
+    
+        const handleDrawerOpen = () => {
+        setOpen(true);
+        };
+    
+        const handleDrawerClose = () => {
+        setOpen(false);
+        };  
+
+        return (
+        <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <AppBar position="fixed" open={open} sx={{backgroundColor: "white" }}>
+            <Toolbar>
+            <IconButton
+                color="black"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                sx={{ mr: 2, ...(open && { display: 'none' }) }}
+            >
+                <MenuIcon />
+            </IconButton>
+            <Typography variant="h5" noWrap component="div" sx={{color: "#4b5563"}}>
+                Google Sheets
+            </Typography>
+            <TopDropDowns/>
+            </Toolbar>
+        </AppBar>
+        <Drawer
+            sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            '& .MuiDrawer-paper': {
+                width: drawerWidth,
+                boxSizing: 'border-box',
+                backgroundColor: "white",
+            },
+            }}
+            variant="persistent"
+            anchor="left"
+            open={open}
+        >
+            <DrawerHeader>
+            <IconButton onClick={handleDrawerClose}>
+                {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            </IconButton>
+            </DrawerHeader>
+            <Divider />
+            <List>
+            <ListItem key={"Nothing1"} disablePadding>
+                <ListItemButton>
+                <ListItemIcon>
+                    <InboxIcon/>
+                </ListItemIcon>
+                <ListItemText primary={"Nothing1"} />
+                </ListItemButton>
+            </ListItem>
+            </List>
+            <Divider />
+            <List>
+            <ListItem key={"Nothing2"} disablePadding>
+                <ListItemButton>
+                <ListItemIcon>
+                    <InboxIcon />
+                </ListItemIcon>
+                <ListItemText primary={"Nothing2"} />
+                </ListItemButton>
+            </ListItem>
+            </List>
+        </Drawer>
+        <Main open={open}>
+            <DrawerHeader />
+            <div>
+            Google Sheets Links:
+            </div>
+        </Main>
+        </Box>
+        )
+    }
+
+
+
 
   //Render the data with the route:
     return (
         <div className="App">
           <Routes>
             <Route path="/SOH_Devices" element={<SOH_Devices_Render/>} />
-            <Route path="/SOH_Faulty_Devices" element={<SOH_Faulty_Devices_Render/>} />
-            <Route path="/SOH_All_Devices" element={<SOH_All_Devices_Render/>} />
+                <Route path="/SOH_Faulty_Devices" element={<SOH_Faulty_Devices_Render/>} />
+                <Route path="/SOH_All_Devices" element={<SOH_All_Devices_Render/>} />
+            <Route path="/Google_Sheets" element={<Google_Sheets_Render/>} />
+            <Route path="/Prod_Creator" element={<Prod_Creator_Render/>} />
             <Route path="/" element={<HomePageNoLink/>} />
           </Routes>
         </div>
