@@ -56,7 +56,7 @@ const theme = createTheme({
   },
 });
 
-export default function DataTable() {
+export default function SOH_Devices() {
 
 //Setup React variables
 const [availData, setAvailData] = React.useState([]);
@@ -119,7 +119,7 @@ const addSelectedToTable = (event) => {
   console.log("Excluding These:",ExcludedRowIDs,"Adding these into select:",NewRowsExcludingExisting)
 }
 
-//Delete the rows for selected table ****************Need to Fix double click from erroring out****************
+//Delete the rows for selected table
 const deleteRowSelectTable = (rowToDelete) => {
     const newSelectDataAfterDelete = selectedTableRows.filter(row => row.id !== rowToDelete)
     SetSelectedTableRows(newSelectDataAfterDelete)
@@ -127,8 +127,11 @@ const deleteRowSelectTable = (rowToDelete) => {
 }
 
 
-//ADD DELETE ALL FUNCTION FOR BUTTON
-
+//Delete All Rows on Select Table
+const deleteAllRowsSelect = (event) => {
+  SetSelectedTableRows([])
+  console.log("All Select Rows Cleared")
+}
 
 //Format as currency
 const currencyFormatter = (params) => {
@@ -155,7 +158,7 @@ const columns = [
 
 //Setup the columns for Selected Table
 const columnsSelected = [
-  { field: 'DeleteRow',renderHeader: (params: GridColumnHeaderParams) => (<IconButton aria-label="delete"><DisabledByDefaultIcon style={{float: "left"}} sx={{ fontSize: 22 }} color="primary"/></IconButton>), width: 59, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",renderCell: rowData=> <IconButton onClick={()=>deleteRowSelectTable(rowData.row.id)} aria-label="delete"><HighlightOffIcon sx={{ fontSize: 22 }} color="primary"/></IconButton>},
+  { field: 'DeleteRow',renderHeader: (params: GridColumnHeaderParams) => (<IconButton onClick={deleteAllRowsSelect} aria-label="delete"><DisabledByDefaultIcon style={{float: "left"}} sx={{ fontSize: 22 }} color="primary"/></IconButton>), width: 59, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",renderCell: rowData=> <IconButton onClick={()=>deleteRowSelectTable(rowData.row.id)} aria-label="delete"><HighlightOffIcon sx={{ fontSize: 22 }} color="primary"/></IconButton>},
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",headerAlign: 'center',align: "center"},
   { field: 'Name', headerName: 'Name 📱', width: 600, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black"},
   { field: 'TotalQTY', headerName: 'QTY', width: 40, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true,headerAlign: 'center',align: "center"},

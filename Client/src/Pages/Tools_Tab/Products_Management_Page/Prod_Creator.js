@@ -76,10 +76,10 @@ const [dearPushStatus, SetDearPushStatus] = React.useState(0)
 const [dearDataFetchedStatus, SetDearDataFetchedStatus] = React.useState(0)
 const [ModelList, setModelList] = React.useState([])
 const [GSMArenaModelList, SetGSMArenaModelList] = React.useState([])
-const [DearModelSelect, SetDearModelSelect] = React.useState();
+const [DearModelSelect, SetDearModelSelect] = React.useState("");
+const [GSMModelSelect, SetGSMModelSelect] = React.useState("");
 const delay = ms => new Promise(res => setTimeout(res, ms));
-const apiRefMainTable = useGridApiRef();
-const apiRefSelectTable = useGridApiRef();
+const apiRefMain = useGridApiRef();
 
 //Get the Prod List
 useEffect(() => {
@@ -237,12 +237,33 @@ const onRowsSelectionHandler = (ids) => {
 
 
 //Handle Dear Model Changed
-const handleChange = (event,newValue) => {
+const handleChangeModelDearSelect = (event,newValue) => {
+    try{
+      SetDearModelSelect(newValue.label);
+      console.log("New Dear Model Selected By User:",newValue.label)
+    }catch{
+      SetDearModelSelect("");
+      SetGSMModelSelect("")
+      console.log("Dear Model Cleared By User")
+    }
+    try{
+    const FilteredGSMModel = GSMArenaModelList.filter((row)=>row.label == newValue.label)[0].label
+    SetGSMModelSelect(FilteredGSMModel)
+    console.log("GSM AUTO Matched Model:",FilteredGSMModel)
+    }catch{
+      console.log("Dear Model Select Fail")
+    }
+};
+
+
+//Handle Dear Model Changed
+const handleChangeGSMModelSelect = (event,newValue) => {
   try{
-    SetDearModelSelect((newValue.label));
-    console.log("New Dear Model Selected By User:",newValue.label)
+    SetGSMModelSelect(newValue.label);
+    console.log("New GSM Arena Value Selected By User:",newValue.label)
   }catch{
-    SetDearModelSelect("")
+    SetGSMModelSelect("");
+    console.log("GSM Arena Value Cleared By User")
   }
 };
 
@@ -327,7 +348,7 @@ const getTogglableColumns = (columns) => {
     
       <div style={{width: "100%", height: "fit-content"}} className="mb-2">
 
-      <div style={{width: "30%",height:"100%", float:"left"}} className="mr-2">
+      <div style={{width: "35%",height:"100%", float:"left"}} className="mr-2">
         
       <FormControl style={{width: "49.2%",float: "left"}} size="small" className="bg-white rounded">
         <Autocomplete
@@ -336,7 +357,7 @@ const getTogglableColumns = (columns) => {
           size="small"
           value={DearModelSelect}
           options={ModelList}
-          onChange={handleChange}
+          onChange={handleChangeModelDearSelect}
           renderInput={(params) => <TextField {...params} label="Dear Model" />}
         >
         </Autocomplete>
@@ -347,7 +368,10 @@ const getTogglableColumns = (columns) => {
         disablePortal
           labelId="combo-box-demo"
           size="small"
+          value={GSMModelSelect}
+          onChange={handleChangeGSMModelSelect}
           options={GSMArenaModelList}
+          apiRef={apiRefMain}
           renderInput={(params) => <TextField {...params} label="GSM Arena Model" />}
         >
         </Autocomplete>
@@ -414,7 +438,7 @@ const getTogglableColumns = (columns) => {
         density="compact"
         disableRowSelectionOnClick 
         onRowSelectionModelChange={(ids) => onRowsSelectionHandler(ids)}
-        apiRef={apiRefMainTable}
+        apiRef={apiRefMain}
       />
     </div>
 

@@ -692,7 +692,7 @@ export const Routes_Import = () =>{
                 <MenuIcon />
             </IconButton>
             <Typography variant="h5" noWrap component="div" sx={{color: "#4b5563"}}>
-                Google Sheets
+                Product Management
             </Typography>
             <TopDropDowns/>
             </Toolbar>

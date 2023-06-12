@@ -211,11 +211,13 @@ app.get("/api/gsmArenaDeviceList", (req,res) => {
     
     gsmListExpanded.forEach((row)=>{
       const deviceList = row.device_list
+      const BrandName = row.brand_name
       
       deviceList.forEach((rowNew)=>{
         const deviceName = rowNew.device_name
         const deviceKey = rowNew.key
-        gsmListFormatted.push({"Model":deviceName,"GSMKey":deviceKey})
+        const ModelToPush = BrandName+" "+deviceName
+        gsmListFormatted.push({"Model":ModelToPush,"GSMKey":deviceKey})
       })
     })
 
