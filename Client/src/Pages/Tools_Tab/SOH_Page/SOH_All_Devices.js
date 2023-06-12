@@ -110,7 +110,7 @@ useEffect(() => {
 
 //Add the rows for the selected Table ********Make alert popup for excluded SKU's********
 const addSelectedToTable = (event) => {
-  const NewRowsToAdd = selectedDataTable.map((row)=>({"id": row.id,"IDDear":row.IDDear,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY}))
+  const NewRowsToAdd = selectedDataTable.map((row)=>({"id": row.id,"IDDear":row.IDDear,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Colour":row.Colour,"Grade":row.Grade,"Battery":row.Battery}))
   const ExistingIDsInSelectRow = selectedTableRows.map((row) => row.id)
   const NewRowsExcludingExisting = NewRowsToAdd.filter((row) => !ExistingIDsInSelectRow.includes(row.id))
   const ExcludedRowIDs = NewRowsToAdd.filter((row) => ExistingIDsInSelectRow.includes(row.id))
@@ -160,7 +160,10 @@ const columns = [
 const columnsSelected = [
   { field: 'DeleteRow',renderHeader: (params: GridColumnHeaderParams) => (<IconButton onClick={deleteAllRowsSelect} aria-label="delete"><DisabledByDefaultIcon style={{float: "left"}} sx={{ fontSize: 22 }} color="primary"/></IconButton>), width: 59, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",renderCell: rowData=> <IconButton onClick={()=>deleteRowSelectTable(rowData.row.id)} aria-label="delete"><HighlightOffIcon sx={{ fontSize: 22 }} color="primary"/></IconButton>},
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",headerAlign: 'center',align: "center"},
-  { field: 'Name', headerName: 'Name 📱', width: 600, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black"},
+  { field: 'FinalModel', headerName: 'Model 📱', width: 350, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black"},
+  { field: 'Colour', headerName: 'Colour', width: 130, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'Battery', headerName: 'Battery', width: 70, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
   { field: 'TotalQTY', headerName: 'QTY', width: 40, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true,headerAlign: 'center',align: "center"},
   { field: 'Price', headerName: 'Price (ex)', width: 90,type: 'number' ,disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true,headerAlign: 'center',align: "center",valueFormatter: currencyFormatter},
 ];
