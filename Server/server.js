@@ -21,7 +21,7 @@ const SaleURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale"
 const SaleOrderURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale/order"
 
 
-//Receive the request on refresh from frontend
+//Receive avail list
 app.get("/api/renewedDevicesList", (req, res) => {
   async function getAvailList(){
   try{
@@ -120,7 +120,112 @@ app.get("/api/renewedDevicesList", (req, res) => {
 
     //Sending results back
       res.json(availFormatted).status(200)
-      console.log("Avail List has Been Fetched and Formatted")
+      console.log("Renewed Devices Avail List has Been Fetched and Formatted")
+    }catch{
+      res.json("ERROR").status(500)
+      console.log("Avail list fetch fail")
+    }
+  }
+  getAvailList()
+});
+
+
+//Receive Faulty device list from cage, cage2
+app.get("/api/faultyDeviceList", (req, res) => {
+  async function getAvailList(){
+  try{
+    //Get the avail list
+      const availRequest = await fetch("https://api.renewablemobile.com.au/dear/productavailability?fields=ID,SKU,Name,Available,Location,Bin&Name=LIKE(Major Fault)&includeproduct=true",{method: "GET", headers: {"auth":"Jindalee1!"}})
+      const availResponse = await availRequest.json()
+
+    //Loop through to get the list formatted for Dealer Cage and Refurb Cage QTY
+    //Get the unique array from avail SKU'S
+    var availUnique = []
+    var cacheArray = []
+    availResponse.Items.forEach(element => {
+      var SKU = element.SKU
+      var Name = element.Name
+      var IDDear = element.ID
+      var PriceTier1 = element.Product.PriceTier1
+      var Brand = element.Product.AdditionalAttribute1
+      var Model = element.Product.AdditionalAttribute2
+      var AVGCost = element.Product.AverageCost
+      if (Model == null || Model == "") {
+        Model="UNKOWN"
+      }
+      var GB = element.Product.AdditionalAttribute3
+      var Colour = element.Product.AdditionalAttribute4
+      var Connectivity = element.Product.AdditionalAttribute5
+      var Battery = element.Product.AdditionalAttribute6
+      var Grade = element.Product.AdditionalAttribute7
+    
+      if (Model.includes("iPad")) {
+        var FinalModel = Brand+" "+Model+" "+GB+" "+Connectivity
+      }if (!Model.includes("iPad")) {
+        var FinalModel = Brand+" "+Model+" "+GB
+      }
+
+      if (Battery == "New Battery") {
+        Battery = "100%"
+      }
+
+    
+      if(!cacheArray.includes(SKU) && Name.includes("Major Fault")){
+        cacheArray.push(SKU)
+        availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
+      }
+
+    })
+
+    //Sum the unique against full array
+    var availFormatted = []
+    availUnique.forEach(element => {
+      var SKU = element.SKU
+      var Name = element.Name
+      var IDDear = element.ID
+      var CageQTY = 0
+      var RefurbCageTwoQTY = 0
+      var TotalQTY = 0
+      var DealerPrice = element.DealerPrice
+      var FinalModel = element.FinalModel
+      var Grade = element.Grade
+      var Battery = element.Battery
+      var AVGCost = element.AVGCost
+      var Colour = element.Colour
+
+      availResponse.Items.forEach(elementTwo => {
+        var SKUBulk = elementTwo.SKU
+        var AvailableQTYBulk = parseInt(elementTwo.Available)
+        var LocationBulk = elementTwo.Location
+        var BinBulk = elementTwo.Bin
+        
+        if(SKU == SKUBulk && LocationBulk == "BNE - Main Warehouse" && BinBulk == "Cage" && AvailableQTYBulk > 0){
+          CageQTY = CageQTY+AvailableQTYBulk
+        }
+
+      })
+
+      TotalQTY = CageQTY
+
+      if(CageQTY != "" || RefurbCageTwoQTY != ""){
+        availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
+      }
+
+    });
+
+    //Sort the array by name
+    availFormatted.sort((a,b)=>{if (a.FinalModel < b.FinalModel) {
+      return -1;
+    }
+    if (a.FinalModel > b.FinalModel) {
+      return 1;
+    }
+    return 0;})
+
+
+    //Sending results back
+      res.json(availFormatted).status(200)
+      console.log("Faulty Devices Avail List has Been Fetched and Formatted")
     }catch{
       res.json("ERROR").status(500)
       console.log("Avail list fetch fail")
@@ -230,6 +335,103 @@ app.get("/api/gsmArenaDeviceList", (req,res) => {
     }
     }
     getGSMArenaDeviceList()
+})
+
+
+//Get all the GSM Arena Variants
+app.post("/api/GetGSMArenaVariantsSpecificModel",(req,res)=>{
+  async function getGSMVariantsSpeceificModel(){
+    try{
+
+      //Get the data and query GSM Arena Device Attributes
+      const dataFromFrontend = req.body
+      const GSMModel = dataFromFrontend.GSMModel
+      const GSMModelKey = dataFromFrontend.GSMModelKey
+      const DearModel = dataFromFrontend.DearModel
+      console.log("Data Received Frontend",dataFromFrontend)
+      const GSMDeviceDetailsRequest = await fetch("https://script.google.com/macros/s/AKfycbxNu27V2Y2LuKUIQMK8lX1y0joB6YmG6hUwB1fNeVbgzEh22TcDGrOak03Fk3uBHmz-/exec",{method: "POST", headers: {'Content-Type': 'application/json'},body: JSON.stringify({"route": "device-detail","key":GSMModelKey})})
+      const GSMDeviceDetailsResponse = await GSMDeviceDetailsRequest.json()
+
+      //Get Prod List
+      const ProdListURL = await fetch(`https://api.renewablemobile.com.au/dear/product/?fields=SKU,Name,PriceTier1,AdditionalAttribute1,AdditionalAttribute2,AdditionalAttribute3,AdditionalAttribute4,AdditionalAttribute5,AdditionalAttribute6,AdditionalAttribute7&Name=AND(LIKE(${DearModel}),LIKE(Renewed))`,{method: "GET", headers: {"auth":"Jindalee1!"}})
+      const ProdListResposne = await ProdListURL.json()
+
+      //Summarize prod list to only include model chosen
+      const summarizedProdList = []
+      ProdListResposne.Items.forEach((row)=>{
+        const BrandProd = row.AdditionalAttribute1
+        const ModelProd = row.AdditionalAttribute2
+        const ModelToCheck = BrandProd+" "+ModelProd
+
+        if(ModelToCheck == DearModel){
+          summarizedProdList.push({row})
+        }
+          
+      })
+
+      //Possible Variants
+      const PossibleGrades = ["A","B+","B-","C+"] //Need to workout how to do battery 70%
+      const PossibleColours = [GSMDeviceDetailsResponse].map((row)=>(row.data.more_specification[12].data[0].data[0]))[0].split(",").map((row)=>(row.trim()))
+      const PossibleGBs = GSMDeviceDetailsResponse.data.storage.split(",")[0].replace("storage","").replace("Storage","").trim().split("/")
+      const PossibleBatterys = ["New Battery","85%+","80%+"] //Need to workout how to do battery 70%
+      const Brand = DearModel.split(" ")[0].trim()
+      const Model = DearModel.replace(Brand,"").trim()
+
+      //Loop Through & Create Variants
+      VariantsNotExisting = []
+      PossibleGBs.forEach((rowGB)=>{
+        const GB = rowGB
+
+        PossibleColours.forEach((rowColour)=>{
+          const Colour = rowColour
+
+          PossibleBatterys.forEach((rowBattery)=>{
+            const Battery = rowBattery
+
+            PossibleGrades.forEach((rowGrade)=>{
+              const Grade = rowGrade
+              let FoundMatch = false
+              const CombinationGSMToCheck = Brand+" "+Model+" "+GB+" "+Colour+" "+"None"+" "+Battery+" "+Grade
+              const AttributesFromGSM = {"Brand":Brand,"Model":Model,"GB":GB,"Colour":Colour,"Connectivity":"None","Battery":Battery,"Grade":Grade}
+              
+              //Loop throught prod list to see if these attributes don't match and if not make it
+              summarizedProdList.forEach((rowProdList)=>{
+                if(FoundMatch === false){
+                  const BrandProdList = rowProdList.row.AdditionalAttribute1
+                  const ModelProdList = rowProdList.row.AdditionalAttribute2
+                  const GBProdList = rowProdList.row.AdditionalAttribute3
+                  const ColourProdList = rowProdList.row.AdditionalAttribute4
+                  const ConnectivityProdList = rowProdList.row.AdditionalAttribute5
+                  const BatteryProdList = rowProdList.row.AdditionalAttribute6
+                  const GradeProdList = rowProdList.row.AdditionalAttribute7
+                  const CombinationToCheckProd = BrandProdList+" "+ModelProdList+" "+GBProdList+" "+ColourProdList+" "+ConnectivityProdList+" "+BatteryProdList+" "+GradeProdList
+
+                  if(CombinationGSMToCheck === CombinationToCheckProd){
+                    FoundMatch = true
+                  }
+                }
+              })
+              
+              //If No Match Push New Variant To Be Made
+              if(FoundMatch == false){
+                VariantsNotExisting.push(AttributesFromGSM)
+              }
+
+            })
+
+          })
+
+        })
+
+      })
+
+      console.log("Variants Not Existing Pushed To Frontend Successfully")
+      res.json({VariantsNotExisting}).status(200)
+    }catch (error){
+      console.log(error)
+    }
+  }
+  getGSMVariantsSpeceificModel()
 })
 
 

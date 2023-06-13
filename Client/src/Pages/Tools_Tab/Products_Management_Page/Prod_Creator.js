@@ -34,6 +34,7 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
+import { json } from "react-router-dom";
 
 
 const theme = createTheme({
@@ -70,7 +71,7 @@ const [mainTableRowsCached, SetMainTableRowsCached] = React.useState([])
 const [mainTableRows, SetMainTableRows] = React.useState([])
 const [selectedTableRows, SetSelectedTableRows] = React.useState([])
 const [pushDearButtonState, SetPushDearButtonState] = React.useState(false);
-const [downloadDearButtonState, SetDownloadDearButtonState] = React.useState(false);
+const [generateButtonState, SetGenerateButtonState] = React.useState(false);
 const [DearPushOpen, SetDearPushOpen] = React.useState(false)
 const [dearPushStatus, SetDearPushStatus] = React.useState(0)
 const [dearDataFetchedStatus, SetDearDataFetchedStatus] = React.useState(0)
@@ -184,7 +185,7 @@ useEffect(() => {
 
     //Set the states
     SetGSMArenaModelList(finalArray)
-    console.log("GSM Arena Models Array Test:",finalArray)
+    console.log("GSM Arena Models Array:",finalArray)
   }
   SetMainTableRowsData();
 }, [gsmArenaData]);
@@ -205,11 +206,11 @@ const columns = [
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",headerAlign: 'center',align: "center"},
   { field: 'Category', headerName: 'Category', width: 110, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
   { field: 'FinalModel', headerName: 'Name 📱', width: 350, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
-  { field: 'Brand', headerName: 'Brand', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
-  { field: 'Model', headerName: 'Model', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
-  { field: 'GB', headerName: 'GB', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
-  { field: 'Colour', headerName: 'Colour', width: 130, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
-  { field: 'Connectivity', headerName: 'Connectivity', width: 110, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'Brand', headerName: 'Brand', width: 90, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'Model', headerName: 'Model', width: 150, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'GB', headerName: 'GB', width: 70, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'Colour', headerName: 'Colour', width: 160, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
+  { field: 'Connectivity', headerName: 'Connectivity', width: 100, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
   { field: 'Battery', headerName: 'Battery', width: 100, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
   { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
   { field: 'DealerPrice', headerName: 'Dealer Price', type: 'number', width: 120,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
@@ -247,7 +248,7 @@ const handleChangeModelDearSelect = (event,newValue) => {
       console.log("Dear Model Cleared By User")
     }
     try{
-    const FilteredGSMModel = GSMArenaModelList.filter((row)=>row.label == newValue.label)[0].label
+    const FilteredGSMModel = GSMArenaModelList.filter((row)=>row.label === newValue.label)[0].label
     SetGSMModelSelect(FilteredGSMModel)
     console.log("GSM AUTO Matched Model:",FilteredGSMModel)
     }catch{
@@ -266,6 +267,24 @@ const handleChangeGSMModelSelect = (event,newValue) => {
     console.log("GSM Arena Value Cleared By User")
   }
 };
+
+
+//Handle Generate Button Click
+const handleGenerateClick = () => {
+  async function FetchServerGSMModelVariants() {
+    SetGenerateButtonState(true)
+    //Get Prod List From Server
+    const GSMModelKey = gsmArenaData.filter((row) => row.Model === GSMModelSelect)[0].GSMKey
+    const request = await fetch("/api/GetGSMArenaVariantsSpecificModel",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify({"GSMModel":GSMModelSelect,"GSMModelKey":GSMModelKey,"DearModel":DearModelSelect})});
+    const response = await request.json()
+    console.log("GSM v Prod List Data Returned:",response)
+    const FormatMainTableRows = response.VariantsNotExisting.map((row,index)=>({"id":index,"Brand":row.Brand,"Model":row.Model,"GB":row.GB,"Colour":row.Colour,"Connectivity":row.Connectivity,"Battery":row.Battery,"Grade":row.Grade}))
+    SetMainTableRows(FormatMainTableRows)
+    SetGenerateButtonState(false)
+    console.log(FormatMainTableRows)
+  }
+  FetchServerGSMModelVariants()
+}
 
 
 //Handle Clicking away from alert
@@ -346,6 +365,10 @@ const getTogglableColumns = (columns) => {
         Product Creator
       </div>
     
+    <div style={{width: "50%", float: "left"}} className="bg-white mb-3 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
+        Mapping
+      </div>
+
       <div style={{width: "100%", height: "fit-content"}} className="mb-2">
 
       <div style={{width: "35%",height:"100%", float:"left"}} className="mr-2">
@@ -376,14 +399,17 @@ const getTogglableColumns = (columns) => {
         >
         </Autocomplete>
       </FormControl>
+      
 
       </div>
+      
+      
 
       <ThemeProvider theme={theme}>
-        <div style={{width: "10%", float: "left",height:"95%"}} className="pr-2">
-        <LoadingButton onClick={""} loading={pushDearButtonState} variant="contained" color="primary" style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DoubleArrowIcon />}>Generate</LoadingButton>
+        <div style={{width: "7.5%", float: "left",height:"95%"}} className="pr-2">
+        <LoadingButton onClick={handleGenerateClick} loading={generateButtonState} variant="contained" color="primary" style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DoubleArrowIcon />}>Generate</LoadingButton>
         </div>
-        <div style={{width: "10%", float: "left",height:"95%"}} className="pr-2">
+        <div style={{width: "7.5%", float: "left",height:"95%"}} className="pr-2">
         <LoadingButton onClick={""} loading={pushDearButtonState} variant="contained" color="secondary" style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DownloadIcon />}>Download</LoadingButton>
         </div>
       </ThemeProvider>
