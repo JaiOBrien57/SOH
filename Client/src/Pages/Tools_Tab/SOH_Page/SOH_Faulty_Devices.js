@@ -100,7 +100,7 @@ useEffect(() => {
 //Set the rows state for the Main Table
 useEffect(() => {
   function SetMainTableRowsData() {
-    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost,"Colour":row.Colour}))
+    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost,"Colour":row.Colour,"AVGPriceTier":row.AVGPriceTier}))
     SetMainTableRows(rows)
     console.log(rows)
   }
@@ -110,7 +110,7 @@ useEffect(() => {
 
 //Add the rows for the selected Table ********Make alert popup for excluded SKU's********
 const addSelectedToTable = (event) => {
-  const NewRowsToAdd = selectedDataTable.map((row)=>({"id": row.id,"IDDear":row.IDDear,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Colour":row.Colour,"Grade":row.Grade,"Battery":row.Battery}))
+  const NewRowsToAdd = selectedDataTable.map((row)=>({"id": row.id,"IDDear":row.IDDear,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Colour":row.Colour,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost}))
   const ExistingIDsInSelectRow = selectedTableRows.map((row) => row.id)
   const NewRowsExcludingExisting = NewRowsToAdd.filter((row) => !ExistingIDsInSelectRow.includes(row.id))
   const ExcludedRowIDs = NewRowsToAdd.filter((row) => ExistingIDsInSelectRow.includes(row.id))
@@ -142,6 +142,29 @@ const currencyFormatter = (params) => {
   }
 };
 
+//Get main table margin
+const getMainTableMargin = (params) => {
+  if (params.row.AVGCost <= 0 || params.DealerPrice <= 0 || params.row.AVGCost === "$0" || params.row.DealerPrice === "$0") {
+    const margin = "0%"
+    return margin
+  }if (params.row.AVGCost > 0 && params.row.DealerPrice > 0 && params.row.AVGCost !== "$0" && params.row.DealerPrice !== "0$") {
+    const margin = String(parseFloat(((params.row.DealerPrice-params.row.AVGCost)/params.row.DealerPrice)*100).toFixed(2))+"%"
+    return margin
+  }
+}
+
+
+//Get Select Table Margin
+const getSelectTableMargin = (params) => {
+  if (params.row.AVGCost <= 0 || params.row.Price <= 0 || params.row.AVGCost === "$0" || params.row.DealerPrice === "$0") {
+    const margin = "0%"
+    return margin
+  }if (params.row.AVGCost > 0 && params.row.Price > 0  && params.row.AVGCost !== "$0" && params.row.Price !== "0$") {
+    const margin = String(parseFloat(((params.row.Price-params.row.AVGCost)/params.row.Price)*100).toFixed(2))+"%"
+    return margin
+  }
+}
+
 
 //Setup the columns for SOH Table
 const columns = [
@@ -149,20 +172,22 @@ const columns = [
   { field: 'FinalModel', headerName: 'Model 📱', width: 350, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
   { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
   { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
-  { field: 'AVGCost', headerName: 'AVG (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
-  { field: 'Margin', headerName: 'Margin (%)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
+  { field: 'AVGCost', headerName: 'AVG (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
+  { field: 'AVGPriceTier', headerName: 'AVG (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
+  { field: 'Margin', headerName: 'Margin (%)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,valueGetter:getMainTableMargin},
 ];
 
 //Setup the columns for Selected Table
 const columnsSelected = [
   { field: 'DeleteRow',renderHeader: (params: GridColumnHeaderParams) => (<IconButton onClick={deleteAllRowsSelect} aria-label="delete"><DisabledByDefaultIcon style={{float: "left"}} sx={{ fontSize: 22 }} color="primary"/></IconButton>), width: 59, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",renderCell: rowData=> <IconButton onClick={()=>deleteRowSelectTable(rowData.row.id)} aria-label="delete"><HighlightOffIcon sx={{ fontSize: 22 }} color="primary"/></IconButton>},
-  { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",headerAlign: 'center',align: "center"},
+  { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",headerAlign: 'center',align: "center", renderCell:rowData=><Link href={`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`} target="_blank">{rowData.row.SKU}</Link>},
   { field: 'FinalModel', headerName: 'Model 📱', width: 350, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black"},
   { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
   { field: 'TotalQTY', headerName: 'QTY', width: 40, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true,headerAlign: 'center',align: "center"},
   { field: 'Price', headerName: 'Price (ex)', width: 90,type: 'number' ,disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true,headerAlign: 'center',align: "center",valueFormatter: currencyFormatter},
-  { field: 'Margin', headerName: 'Margin (%)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
+  { field: 'AVGCost', headerName: 'AVG (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
+  { field: 'Margin', headerName: 'Margin (%)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,valueGetter:getSelectTableMargin},
 ];
 
 //Set the select table rows after cell edit
@@ -414,6 +439,7 @@ const getTogglableColumns = (columns) => {
           pagination: { paginationModel: { pageSize: 100 } },
           columns: {
             columnVisibilityModel: {
+              AVGPriceTier: false,
             },
           },
         }}

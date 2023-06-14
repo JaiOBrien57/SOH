@@ -41,6 +41,7 @@ app.get("/api/renewedDevicesList", (req, res) => {
       var Brand = element.Product.AdditionalAttribute1
       var Model = element.Product.AdditionalAttribute2
       var AVGCost = element.Product.AverageCost
+      var PriceTierAVGCost = element.Product.PriceTier6
       if (Model == null || Model == "") {
         Model="UNKOWN"
       }
@@ -63,7 +64,7 @@ app.get("/api/renewedDevicesList", (req, res) => {
     
       if(!cacheArray.includes(SKU) && Name.includes("Renewed")){
         cacheArray.push(SKU)
-        availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
+        availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":PriceTierAVGCost})
       }
 
     })
@@ -83,6 +84,7 @@ app.get("/api/renewedDevicesList", (req, res) => {
       var Battery = element.Battery
       var AVGCost = element.AVGCost
       var Colour = element.Colour
+      var PriceTierAVGCost = element.AVGPriceTier
 
       availResponse.Items.forEach(elementTwo => {
         var SKUBulk = elementTwo.SKU
@@ -103,7 +105,7 @@ app.get("/api/renewedDevicesList", (req, res) => {
       TotalQTY = CageQTY+RefurbCageTwoQTY
 
       if(CageQTY != "" || RefurbCageTwoQTY != ""){
-        availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
+        availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":PriceTierAVGCost})
       }
 
     });
@@ -150,6 +152,7 @@ app.get("/api/faultyDeviceList", (req, res) => {
       var Brand = element.Product.AdditionalAttribute1
       var Model = element.Product.AdditionalAttribute2
       var AVGCost = element.Product.AverageCost
+      var PriceTierAVGCost = element.Product.PriceTier6
       if (Model == null || Model == "") {
         Model="UNKOWN"
       }
@@ -172,7 +175,7 @@ app.get("/api/faultyDeviceList", (req, res) => {
     
       if(!cacheArray.includes(SKU) && Name.includes("Major Fault")){
         cacheArray.push(SKU)
-        availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
+        availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":PriceTierAVGCost})
       }
 
     })
@@ -192,6 +195,7 @@ app.get("/api/faultyDeviceList", (req, res) => {
       var Battery = element.Battery
       var AVGCost = element.AVGCost
       var Colour = element.Colour
+      var PriceTierAVGCost = element.AVGPriceTier
 
       availResponse.Items.forEach(elementTwo => {
         var SKUBulk = elementTwo.SKU
@@ -208,7 +212,7 @@ app.get("/api/faultyDeviceList", (req, res) => {
       TotalQTY = CageQTY
 
       if(CageQTY != "" || RefurbCageTwoQTY != ""){
-        availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour})
+        availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":PriceTierAVGCost})
       }
 
     });
