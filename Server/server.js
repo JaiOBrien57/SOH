@@ -22,8 +22,6 @@ const client = new Client({
   database: "postgres"
 })
 
-client.connect()
-
 // client.query(`INSERT INTO public."SOH_Pricing_Management" ("Model","BXT_Lowest_Price") VALUES ('Apple iPhone 13 Pro Max 128GB', 200.34)`,(err,res)=>{
 //   if(!err){
 //     console.log("SQL ROWS:",res.rows)
@@ -516,17 +514,12 @@ app.get("/api/prodList_SOH_Settings" ,(req,res) => {
 
 
       //Query the SQL Database
-      const SQLArray = []
-      client.query(`SELECT * FROM public."SOH_Pricing_Management" ORDER BY "Model" ASC `,(err,res)=>{
-        if(!err){
-          console.log("SQL ROWS:",res.rows)
-        }else{
-          console.log(err.message)
-      }
-      })
+      client.connect()
+      const SQLRes = await client.query(`SELECT * FROM public."SOH_Pricing_Management" ORDER BY "Model" ASC `)
+      const SQLRows = await SQLRes.rows
+      client.end()
 
-
-      console.log("Continuing Code")
+      console.log("Continuing Code",SQLRows)
       //Loop through array to match the SQL Data to prod list
       const FormattedProdWithSQLArray = []
       FormattedProdArray.forEach((row)=>{
@@ -539,25 +532,28 @@ app.get("/api/prodList_SOH_Settings" ,(req,res) => {
         let BXT_Lowest_Price = ""
         let Checker = false
         
-        SQLArray.forEach((rowSQL)=>{
+        SQLRows.forEach((rowSQL)=>{
           const ModelSQL = rowSQL.Model
           const BXTLowestSQL = rowSQL.BXT_Lowest_Price
 
           if(Checker === false && ModelSQL === FullModel){
             BXT_Lowest_Price = BXTLowestSQL
+            console.log("Match Found SQL")
             Checker = true
           }
         })
         
-        FormattedProdWithSQLArray.push({"FullModel":FinalModelFull,"Brand":Brand,"Model":Model,"GB":GB,"AVGCage":CageAVG,"PriceTierAVG":PriceTierAVG,"BXT_Lowest_Price":BXT_Lowest_Price})
+        FormattedProdWithSQLArray.push({"FullModel":FullModel,"Brand":Brand,"Model":Model,"GB":GB,"AVGCage":AVGCage,"PriceTierAVG":PriceTierAVG,"BXT_Lowest_Price":BXT_Lowest_Price})
 
       })
 
     console.log("Prod List Retrieved Successfully")
     //Send response back to frontend
     res.json(FormattedProdWithSQLArray).status(200)
-    }catch{
+    }catch(error){
       res.json("ERROR").status(500)
+      console.log("ERROR:",error)
+
     }
     }
     getProdList()
