@@ -53,6 +53,11 @@ const theme = createTheme({
       darker: '#042f2e',
       contrastText: '#fff',
     },
+    Error: {
+      main: '#ef5350',
+      darker: '#c62828',
+      contrastText: '#fff',
+    },
   },
 });
 
@@ -180,7 +185,7 @@ const columns = [
 
 //Setup the columns for Selected Table
 const columnsSelected = [
-  { field: 'DeleteRow',renderHeader: (params: GridColumnHeaderParams) => (<IconButton onClick={deleteAllRowsSelect} aria-label="delete"><DisabledByDefaultIcon style={{float: "left"}} sx={{ fontSize: 22 }} color="primary"/></IconButton>), width: 59, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",renderCell: rowData=> <IconButton onClick={()=>deleteRowSelectTable(rowData.row.id)} aria-label="delete"><HighlightOffIcon sx={{ fontSize: 22 }} color="primary"/></IconButton>},
+  { field: 'DeleteRow',renderHeader: (params: GridColumnHeaderParams) => (<ThemeProvider theme={theme}><IconButton onClick={deleteAllRowsSelect} aria-label="delete"><DisabledByDefaultIcon style={{float: "left"}} color="Error" sx={{fontSize: 22 ,":hover": {color: "#c62828"}}}/></IconButton></ThemeProvider>), width: 59, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",renderCell: rowData=> <ThemeProvider theme={theme}><IconButton onClick={()=>deleteRowSelectTable(rowData.row.id)} aria-label="delete"><HighlightOffIcon sx={{fontSize: 22 ,":hover": {color: "#c62828"}}} color="Error"/></IconButton></ThemeProvider>},
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",headerAlign: 'center',align: "center", renderCell:rowData=><Link href={`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`} target="_blank">{rowData.row.SKU}</Link>},
   { field: 'FinalModel', headerName: 'Model 📱', width: 350, disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black"},
   { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},

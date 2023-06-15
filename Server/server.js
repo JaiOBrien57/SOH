@@ -11,6 +11,37 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 
+//Setup postgresSQL database vars
+const {Client} = require("pg")
+
+const client = new Client({
+  host: "localhost",
+  user: "postgres",
+  port: 5432,
+  password: "Jindalee1!",
+  database: "postgres"
+})
+
+client.connect()
+
+// client.query(`INSERT INTO public."SOH_Pricing_Management" ("Model","BXT_Lowest_Price") VALUES ('Apple iPhone 13 Pro Max 128GB', 200.34)`,(err,res)=>{
+//   if(!err){
+//     console.log("SQL ROWS:",res.rows)
+//   }else{
+//     console.log(err.message)
+//   }
+// })
+
+
+// client.query(`INSERT INTO public."SOH_Pricing_Management" ("Model","BXT_Lowest_Price") VALUES ('Apple iPhone 13 Pro Max 128GB', 200.34)`,(err,res)=>{
+//   if(!err){
+//     console.log("SQL ROWS:",res.rows)
+//   }else{
+//     console.log(err.message)
+//   }
+// })
+
+
 //Setup the Dear API
 const dearHeaders = {
   'Content-Type': 'application/json',
@@ -292,7 +323,7 @@ app.get("/api/prodList" ,(req,res) => {
   async function getProdList(){
     try{
     //Get the prod list
-    const prodRequest = await fetch("https://api.renewablemobile.com.au/dear/product/?fields=SKU,Name,PriceTier1,AdditionalAttribute1,AdditionalAttribute2,AdditionalAttribute3,AdditionalAttribute4,AdditionalAttribute5,AdditionalAttribute6,AdditionalAttribute7&Name=LIKE(Renewed)",{method: "GET", headers: {"auth":"Jindalee1!"}})
+    const prodRequest = await fetch("https://api.renewablemobile.com.au/dear/product/?fields=SKU,Name,PriceTier1,AverageCost,PriceTier6,AdditionalAttribute1,AdditionalAttribute2,AdditionalAttribute3,AdditionalAttribute4,AdditionalAttribute5,AdditionalAttribute6,AdditionalAttribute7&Name=LIKE(Renewed)",{method: "GET", headers: {"auth":"Jindalee1!"}})
     const prodResposne = await prodRequest.json()
     //Format the prod list
     const ProdListFormatted = prodResposne.Items
@@ -437,6 +468,101 @@ app.post("/api/GetGSMArenaVariantsSpecificModel",(req,res)=>{
   }
   getGSMVariantsSpeceificModel()
 })
+
+
+
+//Get the Prod List For SOH Settings Variables
+app.get("/api/prodList_SOH_Settings" ,(req,res) => {
+  async function getProdList(){
+    try{
+    //Get the prod list
+    const prodRequest = await fetch("https://api.renewablemobile.com.au/dear/product/?fields=SKU,Name,PriceTier1,AdditionalAttribute1,AdditionalAttribute2,AdditionalAttribute3,AdditionalAttribute4,AdditionalAttribute5,AdditionalAttribute6,AdditionalAttribute7,AverageCost,PriceTier6,AttributeSet&Name=LIKE(Renewed)&AttributeSet=EXACT(Phone-Attributes)",{method: "GET", headers: {"auth":"Jindalee1!"}})
+    const prodResposne = await prodRequest.json()
+    //Format the prod list
+    const ProdListFormatted = prodResposne.Items
+    const FormattedProdArray = []
+    const cacheArray = []
+    ProdListFormatted.forEach((row)=>{
+      const Brand = row.AdditionalAttribute1
+      let Model = row.AdditionalAttribute2
+      const GB = row.AdditionalAttribute3
+      const Connectivity = row.AdditionalAttribute5
+      const CageAVG = row.AverageCost
+      const PriceTierAVG = row.PriceTier6
+      const AttributeSet = row.AttributeSet
+
+      if(Connectivity != "None"){
+        Model = Model+" "+Connectivity
+      }
+
+      const FinalModelFull = Brand+" "+Model+" "+GB
+      
+      if(!cacheArray.includes(FinalModelFull) && Brand!= "" && Brand != null && Brand != "null" && Model != null && Model != "null" && Model != "null null" && AttributeSet === "Phone-Attributes"){
+        cacheArray.push(FinalModelFull)
+        FormattedProdArray.push({"FullModel":FinalModelFull,"Brand":Brand,"Model":Model,"GB":GB,"AVGCage":CageAVG,"PriceTierAVG":PriceTierAVG})
+      }
+
+    })
+
+
+      //Sort the array by name
+      FormattedProdArray.sort((a,b)=>{if (a.FullModel < b.FullModel) {
+        return -1;
+      }
+      if (a.FullModel > b.FullModel) {
+        return 1;
+      }
+      return 0;})
+
+
+      //Query the SQL Database
+      const SQLArray = []
+      client.query(`SELECT * FROM public."SOH_Pricing_Management" ORDER BY "Model" ASC `,(err,res)=>{
+        if(!err){
+          console.log("SQL ROWS:",res.rows)
+        }else{
+          console.log(err.message)
+      }
+      })
+
+
+      console.log("Continuing Code")
+      //Loop through array to match the SQL Data to prod list
+      const FormattedProdWithSQLArray = []
+      FormattedProdArray.forEach((row)=>{
+        const FullModel = row.FullModel
+        const Brand = row.Brand
+        const Model = row.Model
+        const GB = row.GB
+        const AVGCage = row.AVGCage
+        const PriceTierAVG = row.PriceTierAVG
+        let BXT_Lowest_Price = ""
+        let Checker = false
+        
+        SQLArray.forEach((rowSQL)=>{
+          const ModelSQL = rowSQL.Model
+          const BXTLowestSQL = rowSQL.BXT_Lowest_Price
+
+          if(Checker === false && ModelSQL === FullModel){
+            BXT_Lowest_Price = BXTLowestSQL
+            Checker = true
+          }
+        })
+        
+        FormattedProdWithSQLArray.push({"FullModel":FinalModelFull,"Brand":Brand,"Model":Model,"GB":GB,"AVGCage":CageAVG,"PriceTierAVG":PriceTierAVG,"BXT_Lowest_Price":BXT_Lowest_Price})
+
+      })
+
+    console.log("Prod List Retrieved Successfully")
+    //Send response back to frontend
+    res.json(FormattedProdWithSQLArray).status(200)
+    }catch{
+      res.json("ERROR").status(500)
+    }
+    }
+    getProdList()
+})
+
 
 
 
