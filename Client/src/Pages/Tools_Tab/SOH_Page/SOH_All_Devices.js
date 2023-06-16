@@ -105,7 +105,7 @@ useEffect(() => {
 //Set the rows state for the Main Table
 useEffect(() => {
   function SetMainTableRowsData() {
-    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost,"Colour":row.Colour}))
+    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost,"Colour":row.Colour,"AVGPriceTier":row.AVGPriceTier,"BXT_Lowest_Price":row.BXT_Lowest_Price}))
     SetMainTableRows(rows)
     console.log(rows)
   }
@@ -115,7 +115,7 @@ useEffect(() => {
 
 //Add the rows for the selected Table ********Make alert popup for excluded SKU's********
 const addSelectedToTable = (event) => {
-  const NewRowsToAdd = selectedDataTable.map((row)=>({"id": row.id,"IDDear":row.IDDear,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Colour":row.Colour,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost}))
+  const NewRowsToAdd = selectedDataTable.map((row)=>({"id": row.id,"IDDear":row.IDDear,"SKU":row.SKU,"Name":row.Name,"Price":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Colour":row.Colour,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGPriceTier}))
   const ExistingIDsInSelectRow = selectedTableRows.map((row) => row.id)
   const NewRowsExcludingExisting = NewRowsToAdd.filter((row) => !ExistingIDsInSelectRow.includes(row.id))
   const ExcludedRowIDs = NewRowsToAdd.filter((row) => ExistingIDsInSelectRow.includes(row.id))
@@ -141,7 +141,7 @@ const deleteAllRowsSelect = (event) => {
 //Format as currency
 const currencyFormatter = (params) => {
   if (params.value == "" || params.value == "$" || params.value == null) {
-    return '$' + (0)
+    return '$' + parseFloat(0.00).toFixed(2)
   }if (params.value != "" && params.value != "$") {
     return '$' + parseFloat((params.value)).toFixed(2);
   }
@@ -149,11 +149,11 @@ const currencyFormatter = (params) => {
 
 //Get main table margin
 const getMainTableMargin = (params) => {
-  if (params.row.AVGCost <= 0 || params.DealerPrice <= 0 || params.row.AVGCost === "$0" || params.row.DealerPrice === "$0") {
+  if (params.row.AVGPriceTier <= 0 || params.DealerPrice <= 0 || params.row.AVGPriceTier === "$0" || params.row.DealerPrice === "$0") {
     const margin = "-%"
     return margin
-  }if (params.row.AVGCost > 0 && params.row.DealerPrice > 0 && params.row.AVGCost !== "$0" && params.row.DealerPrice !== "0$") {
-    const margin = String(parseFloat(((params.row.DealerPrice-params.row.AVGCost)/params.row.DealerPrice)*100).toFixed(2))+"%"
+  }if (params.row.AVGPriceTier > 0 && params.row.DealerPrice > 0 && params.row.AVGPriceTier !== "$0" && params.row.DealerPrice !== "0$") {
+    const margin = String(parseFloat(((params.row.DealerPrice-params.row.AVGPriceTier)/params.row.DealerPrice)*100).toFixed(2))+"%"
     return margin
   }
 }
@@ -180,8 +180,10 @@ const columns = [
   { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
-  { field: 'AVGCost', headerName: 'AVG (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
+  { field: 'AVGCost', headerName: 'AVG-c (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
+  { field: 'AVGPriceTier', headerName: 'AVG (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'Margin', headerName: 'Margin (%)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,valueGetter:getMainTableMargin},
+  { field: 'BXT_Lowest_Price', headerName: 'BXT (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
 ];
 
 //Setup the columns for Selected Table
@@ -373,8 +375,11 @@ function CustomPagination(props) {
   return (
   <ThemeProvider theme={theme}>
     
-    <Typography>ADD Price SUM HERE</Typography >
-    <Typography>ADD QTY SUM HERE</Typography >
+    <Typography variant="subtitle2">Total: {mainTableRows.reduce((old, current) => old + current.TotalQTY, 0)}</Typography >
+    <Typography variant="subtitle2">Cage: {mainTableRows.reduce((old, current) => old + current.AvailableCage, 0)}</Typography >
+    <Typography variant="subtitle2">Refurb Cage: {mainTableRows.reduce((old, current) => old + current.AvailableRefurbCage, 0)}</Typography >
+    <Typography variant="subtitle2">Cost: {"$"+parseFloat((mainTableRows.reduce((old, current) => old + current.AVGCost, 0))*(mainTableRows.reduce((old, current) => old + current.TotalQTY, 0))).toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</Typography >
+    <Typography variant="subtitle2">Value: {"$"+parseFloat((mainTableRows.reduce((old, current) => old + current.DealerPrice, 0))*(mainTableRows.reduce((old, current) => old + current.TotalQTY, 0))).toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</Typography >
 
     <GridPagination ActionsComponent={Pagination} {...props} />
 
@@ -447,6 +452,7 @@ const getTogglableColumns = (columns) => {
           pagination: { paginationModel: { pageSize: 100 } },
           columns: {
             columnVisibilityModel: {
+              AVGCost: false,
             },
           },
         }}

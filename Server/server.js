@@ -22,23 +22,7 @@ const client = new Client({
   database: "postgres"
 })
 
-// client.query(`INSERT INTO public."SOH_Pricing_Management" ("Model","BXT_Lowest_Price") VALUES ('Apple iPhone 13 Pro Max 128GB', 200.34)`,(err,res)=>{
-//   if(!err){
-//     console.log("SQL ROWS:",res.rows)
-//   }else{
-//     console.log(err.message)
-//   }
-// })
-
-
-// client.query(`INSERT INTO public."SOH_Pricing_Management" ("Model","BXT_Lowest_Price") VALUES ('Apple iPhone 13 Pro Max 128GB', 200.34)`,(err,res)=>{
-//   if(!err){
-//     console.log("SQL ROWS:",res.rows)
-//   }else{
-//     console.log(err.message)
-//   }
-// })
-
+client.connect()
 
 //Setup the Dear API
 const dearHeaders = {
@@ -148,13 +132,53 @@ app.get("/api/renewedDevicesList", (req, res) => {
     }
     return 0;})
 
+    //Query the SQL Database
+    const SQLRes = await client.query(`SELECT * FROM public."SOH_Pricing_Management" ORDER BY "Model" ASC `)
+    const SQLRows = await SQLRes.rows
+
+    const FinalArrayWithSQLData = []
+    availFormatted.forEach((row)=>{
+      const IDDear = row.IDDear
+      const SKU = row.SKU
+      const Name = row.Name
+      const AvailableCage = row.AvailableCage
+      const AvailableRefurbCage = row.AvailableRefurbCage
+      const DealerPrice = row.DealerPrice
+      const TotalQTY = row.TotalQTY
+      const FinalModel = row.FinalModel
+      const Grade = row.Grade
+      const Battery = row.Battery
+      const AVGCost = row.AVGCost
+      const Colour = row.Colour
+      const AVGPriceTier = row.AVGPriceTier
+      let Checker = false
+      let BXT_Lowest_Price = ""
+
+      SQLRows.forEach((rowSQL)=>{
+        const ModelSQL = rowSQL.Model
+        const BXTLowestSQL = rowSQL.BXT_Lowest_Price
+
+        if(Checker === false && ModelSQL === FinalModel){
+          BXT_Lowest_Price = BXTLowestSQL
+          Checker = true
+        }
+      })
+
+      //Run the for each for the extra Bulk Trader Price Tier ***Check Email
+      if(AVGCost/DealerPrice < 40)
+
+      FinalArrayWithSQLData.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":AvailableCage,"AvailableRefurbCage":AvailableRefurbCage,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":AVGPriceTier,"BXT_Lowest_Price":BXT_Lowest_Price})
+
+    })
+
+
 
     //Sending results back
-      res.json(availFormatted).status(200)
+      res.json(FinalArrayWithSQLData).status(200)
       console.log("Renewed Devices Avail List has Been Fetched and Formatted")
-    }catch{
+    }catch(error){
       res.json("ERROR").status(500)
-      console.log("Avail list fetch fail")
+      console.log("Avail list fetch fail:",error)
     }
   }
   getAvailList()
@@ -514,12 +538,9 @@ app.get("/api/prodList_SOH_Settings" ,(req,res) => {
 
 
       //Query the SQL Database
-      client.connect()
       const SQLRes = await client.query(`SELECT * FROM public."SOH_Pricing_Management" ORDER BY "Model" ASC `)
       const SQLRows = await SQLRes.rows
-      client.end()
 
-      console.log("Continuing Code",SQLRows)
       //Loop through array to match the SQL Data to prod list
       const FormattedProdWithSQLArray = []
       FormattedProdArray.forEach((row)=>{
@@ -538,7 +559,6 @@ app.get("/api/prodList_SOH_Settings" ,(req,res) => {
 
           if(Checker === false && ModelSQL === FullModel){
             BXT_Lowest_Price = BXTLowestSQL
-            console.log("Match Found SQL")
             Checker = true
           }
         })
@@ -558,6 +578,22 @@ app.get("/api/prodList_SOH_Settings" ,(req,res) => {
     }
     getProdList()
 })
+
+
+//Update Pricing Variables Set on the sheet
+app.post("/api/SOHUpdateSQLVarsPricing", (req, res) => {
+  async function runSQLUpdate(){  
+    //Retrieve Data from frontend
+    const dataFromFrontend = req.body
+    //Make SQL Query
+    const value_string = dataFromFrontend.map(row=> `('${row.FullModel}', '${row.BXT_Lowest_Price}')`).join(",")
+    console.log("SQL Formatted String:",value_string)
+    const SQLReqTEST = await client.query(`INSERT INTO public."SOH_Pricing_Management" ("Model","BXT_Lowest_Price") VALUES ${value_string} ON CONFLICT ("Model") DO UPDATE SET "BXT_Lowest_Price" = excluded."BXT_Lowest_Price"`)
+    console.log("SQL Result:",SQLReqTEST) 
+    res.json("SQL Data Pushed Successfully").status(200)
+  }
+  runSQLUpdate()
+});
 
 
 

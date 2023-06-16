@@ -77,7 +77,8 @@ const [mainTableRows, SetMainTableRows] = React.useState([])
 const [selectedTableRows, SetSelectedTableRows] = React.useState([])
 const [pushDearButtonState, SetPushDearButtonState] = React.useState(false);
 const [generateButtonState, SetGenerateButtonState] = React.useState(false);
-const [DearPushOpen, SetDearPushOpen] = React.useState(false)
+const [DataPushedPopUp, SetDataPushedPopUp] = React.useState(false)
+const [DearPushOpen,SetDearPushOpen] = React.useState(false)
 const [dearPushStatus, SetDearPushStatus] = React.useState(0)
 const [actionButtonState, SetActionButtonState] = React.useState("")
 const [dearDataFetchedStatus, SetDearDataFetchedStatus] = React.useState(0)
@@ -120,13 +121,22 @@ useEffect(() => {
 //Set the Main Table rows after cell edit
 const handleCellEditChangePrice = (params, event) => {
   const { id, field, value, api } = params;
-  const updatedRows = selectedTableRows.map((row) => {
+  const updatedRows = mainTableRows.map((row) => {
     if (row.id === id) {
-      return { ...params };
+      //If BXT Value is null do below
+      if(params.BXT_Lowest_Price === "" || params.BXT_Lowest_Price === null){
+        const ParamsResult = [{...params}]
+        const ResultWithoutBXTPrice = ParamsResult.map(({ BXT_Lowest_Price, ...rest }) => rest)[0]
+        const finalArray = {...ResultWithoutBXTPrice,"BXT_Lowest_Price":0.00}
+        return { ...finalArray };
+      //If BXT value is not null do below
+      }if(params.BXT_Lowest_Price !== "" && params.BXT_Lowest_Price !== null){
+        return { ...params };
+      }
     }
     return row;
   });
-  SetSelectedTableRows(updatedRows);
+  SetMainTableRows(updatedRows);
   console.log(updatedRows)
   return(params)
 };
@@ -139,9 +149,9 @@ const handleRowUpdateErrorPrice = (params, error) => {
 
 //Format as currency
 const currencyFormatter = (params) => {
-  if (params.value == "" || params.value == "$" || params.value == null) {
-    return '$' + (0)
-  }if (params.value != "" && params.value != "$") {
+  if (params.value === "" || params.value === "$" || params.value === null) {
+    return '$' + parseFloat(0.00).toFixed(2)
+  }if (params.value !== "" && params.value !== "$") {
     return '$' + parseFloat((params.value)).toFixed(2);
   }
 };
@@ -151,9 +161,8 @@ const currencyFormatter = (params) => {
 const columns = [
   { field: 'FullModel', headerName: 'Full Model', width: 350, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'left',align: "left"},
   { field: 'Brand', headerName: 'Brand', width: 90, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
-  { field: 'Model', headerName: 'Model', width: 190, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
-  { field: 'GB', headerName: 'GB', width: 150, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
-  { field: 'DealerPrice', headerName: 'Dealer Price', type: 'number', width: 120,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
+  { field: 'Model', headerName: 'Model 📱', width: 280, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'left',align: "left"},
+  { field: 'GB', headerName: 'GB', width: 90, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
   { field: 'AVGCost', headerName: 'AVG-C (ex)', type: 'number', width: 100,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'AVGPriceTier', headerName: 'AVG (ex)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'BXT_Lowest_Price', headerName: 'BXT Lowest', width: 100,type: 'number' ,disableColumnMenu: true, sortable: true, headerClassName: "bg-white text-black", cellClassName: "text-black", editable: true,headerAlign: 'center',align: "center",valueFormatter: currencyFormatter},
@@ -166,6 +175,14 @@ if (dearDataFetchedStatus === 500) {
     <Alert onClose={handleCloseAlert} severity="error" sx={{ width: '100%'}}>
       <AlertTitle>Error</AlertTitle>
       <Typography>DEAR Data Failed To Fetch, Reload Page To Try Again</Typography>
+    </Alert>
+  </Snackbar>
+  }
+  if (DataPushedPopUp === true) {
+    return <Snackbar open={DataPushedPopUp} autoHideDuration={100} anchorOrigin={{vertical: "top",horizontal: "center"}}>
+    <Alert onClose={handleCloseAlert} severity="success" sx={{ width: '100%'}}>
+      <AlertTitle>Success</AlertTitle>
+      <Typography>Update Was Pushed Succesfully</Typography>
     </Alert>
   </Snackbar>
   }
@@ -182,9 +199,16 @@ const onRowsSelectionHandler = (ids) => {
 const handlePressClickPush = () => {
   async function PushToDataBaseOrClear() {
     SetGenerateButtonState(true)
-    //Send the Table Data with Changes To Data Base
-
+    //Data to send to the query
+    const FilteredData = mainTableRows.filter((row)=> row.BXT_Lowest_Price !== "" && row.BXT_Lowest_Price !== null)
+    const DataToSend = FilteredData.map((row)=>({"FullModel":row.FullModel,"BXT_Lowest_Price":row.BXT_Lowest_Price}))
+    // //Make Query To SQL Data base to update or insert new rows using below QUERY
+    const request = await fetch("/api/SOHUpdateSQLVarsPricing",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify(DataToSend)});
+    const response = await request.json()
+    console.log(response)
+    await delay(2000)
     SetGenerateButtonState(false)
+    SetDataPushedPopUp(true)
   }
   PushToDataBaseOrClear()
 }
@@ -196,7 +220,8 @@ const handleCloseAlert = (event, reason) => {
     return;
   }
 
-  SetDearPushOpen(false);
+  SetDataPushedPopUp(false);
+  SetDearPushOpen(false)
 };
 
 
@@ -241,10 +266,7 @@ function Pagination({ page, onPageChange, className }) {
 function CustomPagination(props) {
   return (
   <ThemeProvider theme={theme}>
-    
-    <Typography>ADD Price SUM HERE</Typography >
-    <Typography>ADD QTY SUM HERE</Typography >
-
+  
     <GridPagination ActionsComponent={Pagination} {...props} />
 
   </ThemeProvider>
@@ -286,7 +308,7 @@ const getTogglableColumns = (columns) => {
         <LoadingButton onClick={handlePressClickPush} loading={generateButtonState} variant="contained" color="primary" style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DoubleArrowIcon />}>Push</LoadingButton>
         </div>
         <div style={{width: "9%", float: "left",height:"95%"}} className="pr-2">
-        <LoadingButton onClick={""} loading={generateButtonState} variant="contained" color="Error" sx={{":hover": {bgcolor: "#c62828",color: "white"}}}  style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DeleteIcon />}>Clear</LoadingButton>
+        <LoadingButton onClick={""} loading={""} variant="contained" color="Error" sx={{":hover": {bgcolor: "#c62828",color: "white"}}}  style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DeleteIcon />}>Clear</LoadingButton>
         </div>
       </ThemeProvider>
 

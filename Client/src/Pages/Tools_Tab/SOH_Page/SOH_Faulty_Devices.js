@@ -370,8 +370,9 @@ function CustomPagination(props) {
   return (
   <ThemeProvider theme={theme}>
     
-    <Typography>ADD Price SUM HERE</Typography >
-    <Typography>ADD QTY SUM HERE</Typography >
+    <Typography variant="subtitle2">Total: {mainTableRows.reduce((old, current) => old + current.TotalQTY, 0)}</Typography >
+    <Typography variant="subtitle2">Cost: {"$"+parseFloat((mainTableRows.reduce((old, current) => old + current.AVGCost, 0))*(mainTableRows.reduce((old, current) => old + current.TotalQTY, 0))).toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</Typography >
+    <Typography variant="subtitle2">Value: {"$"+parseFloat((mainTableRows.reduce((old, current) => old + current.DealerPrice, 0))*(mainTableRows.reduce((old, current) => old + current.TotalQTY, 0))).toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')}</Typography >
 
     <GridPagination ActionsComponent={Pagination} {...props} />
 
