@@ -596,6 +596,28 @@ app.post("/api/SOHUpdateSQLVarsPricing", (req, res) => {
 });
 
 
+//Get GSM Attributes to autofill frontent selects
+app.post("/api/ProductManagement_GSMAttributes_AutoFill",(req,res)=>{
+  async function FetchAttributes(){
+    try{
+      //Retrieve Data from frontend
+      const dataFromFrontend = req.body
+      const GSMKey = dataFromFrontend.GSMKey
+      //Fetch Data from GSM Arena API
+      const GSMDeviceDetailsRequest = await fetch("https://script.google.com/macros/s/AKfycbxNu27V2Y2LuKUIQMK8lX1y0joB6YmG6hUwB1fNeVbgzEh22TcDGrOak03Fk3uBHmz-/exec",{method: "POST", headers: {'Content-Type': 'application/json'},body: JSON.stringify({"route": "device-detail","key":GSMKey})})
+      const GSMDeviceDetailsResponse = await GSMDeviceDetailsRequest.json()
+      //Format the JSON to Send Back
+      const GBS = GSMDeviceDetailsResponse.data.storage.split(",")[0].replace("storage","").replace("Storage","").trim().split("/")
+      const Colours = [GSMDeviceDetailsResponse].map((row)=>(row.data.more_specification[12].data[0].data[0]))[0].split(",").map((row)=>(row.trim()))
+      res.json({"GBS":GBS,"Colours":Colours}).status(200)
+    }catch{
+      res.json("GSM Request Failed").status(500)
+    }
+  }
+  FetchAttributes()
+})
+
+
 
 
 //Launch the backend server

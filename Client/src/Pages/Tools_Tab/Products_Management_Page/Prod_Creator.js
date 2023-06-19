@@ -34,6 +34,7 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
 import { json } from "react-router-dom";
 
 
@@ -67,6 +68,8 @@ const [prodListData, SetProdListData] = React.useState([]);
 const [gsmArenaData, SetgsmArenaData] = React.useState([])
 const [selectedDataTable, SetSelectedDataTable] = React.useState([]);
 const [contentLoaded, SetContentLoaded] = React.useState(true)
+const [GSMReturnedColours, SetGSMReturnedColours] = React.useState([])
+const [GSMReturnedCapacitys, SetGSMReturnedCapacitys] = React.useState([])
 const [mainTableRowsCached, SetMainTableRowsCached] = React.useState([])
 const [mainTableRows, SetMainTableRows] = React.useState([])
 const [selectedTableRows, SetSelectedTableRows] = React.useState([])
@@ -78,7 +81,20 @@ const [dearDataFetchedStatus, SetDearDataFetchedStatus] = React.useState(0)
 const [ModelList, setModelList] = React.useState([])
 const [GSMArenaModelList, SetGSMArenaModelList] = React.useState([])
 const [DearModelSelect, SetDearModelSelect] = React.useState("");
-const [GSMModelSelect, SetGSMModelSelect] = React.useState("");
+const [GSMModelSelect, SetGSMModelSelect] = React.useState({"Model":""});
+//Select Attributes Colours
+const [ColourSelect1,SetColourSelect1] = React.useState("")
+const [ColourSelect2,SetColourSelect2] = React.useState("")
+const [ColourSelect3,SetColourSelect3] = React.useState("")
+const [ColourSelect4,SetColourSelect4] = React.useState("")
+const [ColourSelect5,SetColourSelect5] = React.useState("")
+//Select Attributes GBS
+const [GBSelect1,SetGBSelect1] = React.useState("")
+const [GBSelect2,SetGBSelect2] = React.useState("")
+const [GBSelect3,SetGBSelect3] = React.useState("")
+const [GBSelect4,SetGBSelect4] = React.useState("")
+const [GBSelect5,SetGBSelect5] = React.useState("")
+
 const delay = ms => new Promise(res => setTimeout(res, ms));
 const apiRefMain = useGridApiRef();
 
@@ -191,6 +207,49 @@ useEffect(() => {
 }, [gsmArenaData]);
 
 
+//Handle Attribute AutoFill on GSM Arena Model Change
+useEffect(() => {
+  async function FetchAttributesGSM() {
+    //Request Server For Attributes
+    if(GSMModelSelect.Model !== ""){
+      //Clear the Attributes
+      SetColourSelect1("")
+      SetColourSelect2("")
+      SetColourSelect3("")
+      SetColourSelect4("")
+      SetColourSelect5("")
+      SetGBSelect1("")
+      SetGBSelect2("")
+      SetGBSelect3("")
+      SetGBSelect4("")
+      SetGBSelect5("")
+      //Make the request to Server
+      const GSMModelKey = GSMModelSelect.GSMKey
+      const request = await fetch("/api/ProductManagement_GSMAttributes_AutoFill",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify({"GSMKey":GSMModelKey})})
+      const response = await request.json()
+      const FormattedColours = response.Colours.map((row)=>({label:row}))
+      const FormattedCapacitys = response.GBS.map((row)=>({label:row}))
+      console.log("Attributes GSM Returned",GSMModelKey,response)
+      SetGSMReturnedColours(FormattedColours)
+      SetGSMReturnedCapacitys(FormattedCapacitys)
+      //Auto Fill the select boxes
+      SetColourSelect1(FormattedColours[0])
+      SetColourSelect2(FormattedColours[1])
+      SetColourSelect3(FormattedColours[2])
+      SetColourSelect4(FormattedColours[3])
+      SetColourSelect5(FormattedColours[4])
+      SetGBSelect1(FormattedCapacitys[0])
+      SetGBSelect2(FormattedCapacitys[1])
+      SetGBSelect3(FormattedCapacitys[2])
+      SetGBSelect4(FormattedCapacitys[3])
+      SetGBSelect5(FormattedCapacitys[4])
+    }
+  }
+  FetchAttributesGSM();
+}, [GSMModelSelect]);
+
+
+
 //Format as currency
 const currencyFormatter = (params) => {
   if (params.value == "" || params.value == "$" || params.value == null) {
@@ -244,12 +303,13 @@ const handleChangeModelDearSelect = (event,newValue) => {
       console.log("New Dear Model Selected By User:",newValue.label)
     }catch{
       SetDearModelSelect("");
-      SetGSMModelSelect("")
+      SetGSMModelSelect({"Model":""})
       console.log("Dear Model Cleared By User")
     }
     try{
     const FilteredGSMModel = GSMArenaModelList.filter((row)=>row.label === newValue.label)[0].label
-    SetGSMModelSelect(FilteredGSMModel)
+    const KeyGSMModelSelected = gsmArenaData.filter((row)=>row.Model === newValue.label)[0].GSMKey
+    SetGSMModelSelect({"Model":FilteredGSMModel,"GSMKey":KeyGSMModelSelected})
     console.log("GSM AUTO Matched Model:",FilteredGSMModel)
     }catch{
       console.log("Dear Model Select Fail")
@@ -260,10 +320,11 @@ const handleChangeModelDearSelect = (event,newValue) => {
 //Handle Dear Model Changed
 const handleChangeGSMModelSelect = (event,newValue) => {
   try{
-    SetGSMModelSelect(newValue.label);
+    const KeyGSMModelSelected = gsmArenaData.filter(row=>row.Model === newValue.label)[0].GSMKey
+    SetGSMModelSelect({"Model":newValue.label,"GSMKey":KeyGSMModelSelected});
     console.log("New GSM Arena Value Selected By User:",newValue.label)
   }catch{
-    SetGSMModelSelect("");
+    SetGSMModelSelect({"Model":""});
     console.log("GSM Arena Value Cleared By User")
   }
 };
@@ -285,6 +346,10 @@ const handleGenerateClick = () => {
   }
   FetchServerGSMModelVariants()
 }
+
+
+//Handle Value Changed Select Colour 1
+
 
 
 //Handle Clicking away from alert
@@ -366,7 +431,7 @@ const getTogglableColumns = (columns) => {
       </div>
     
     <div style={{width: "50%", float: "left"}} className="bg-white mb-3 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
-        Mapping
+        Model:
       </div>
 
       <div style={{width: "100%", height: "fit-content"}} className="mb-2">
@@ -391,7 +456,7 @@ const getTogglableColumns = (columns) => {
         disablePortal
           labelId="combo-box-demo"
           size="small"
-          value={GSMModelSelect}
+          value={GSMModelSelect.Model}
           onChange={handleChangeGSMModelSelect}
           options={GSMArenaModelList}
           apiRef={apiRefMain}
@@ -402,8 +467,6 @@ const getTogglableColumns = (columns) => {
       
 
       </div>
-      
-      
 
       <ThemeProvider theme={theme}>
         <div style={{width: "7.5%", float: "left",height:"95%"}} className="pr-2">
@@ -413,6 +476,189 @@ const getTogglableColumns = (columns) => {
         <LoadingButton onClick={""} loading={pushDearButtonState} variant="contained" color="secondary" style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DownloadIcon />}>Download</LoadingButton>
         </div>
       </ThemeProvider>
+
+      </div>
+
+
+      <div style={{width: "69.7%", float: "left"}} className="bg-white mb-3 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
+        Attributes:
+      </div>
+
+      <div style={{width: "100%", height: "fit-content"}} className="mb-2">
+
+      <div style={{width: "80%",height:"100%", float:"left"}} className="mr-2">
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={ColourSelect1}
+          options={GSMReturnedColours}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="1.Colour" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={ColourSelect2}
+          options={GSMReturnedColours}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="2.Colour" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={ColourSelect3}
+          options={GSMReturnedColours}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="3.Colour" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={ColourSelect4}
+          options={GSMReturnedColours}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="4.Colour" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={ColourSelect5}
+          options={GSMReturnedColours}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="5.Colour" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+
+      </div>
+
+      </div>
+
+      <div style={{width: "100%", height: "fit-content"}} className="mb-2">
+
+      <div style={{width: "80%",height:"100%", float:"left"}} className="mr-2">
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={GBSelect1}
+          options={GSMReturnedCapacitys}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="1.Capacity" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={GBSelect2}
+          options={GSMReturnedCapacitys}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="2.Capacity" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={GBSelect3}
+          options={GSMReturnedCapacitys}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="3.Capacity" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={GBSelect4}
+          options={GSMReturnedCapacitys}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="4.Capacity" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={GBSelect5}
+          options={GSMReturnedCapacitys}
+          onChange={""}
+          renderInput={(params) => <TextField {...params} label="5.Capacity" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+
+      </div>
 
       </div>
       
