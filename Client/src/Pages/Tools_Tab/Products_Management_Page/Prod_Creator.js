@@ -88,12 +88,14 @@ const [ColourSelect2,SetColourSelect2] = React.useState("")
 const [ColourSelect3,SetColourSelect3] = React.useState("")
 const [ColourSelect4,SetColourSelect4] = React.useState("")
 const [ColourSelect5,SetColourSelect5] = React.useState("")
+const [ColourSelect6,SetColourSelect6] = React.useState("")
 //Select Attributes GBS
 const [GBSelect1,SetGBSelect1] = React.useState("")
 const [GBSelect2,SetGBSelect2] = React.useState("")
 const [GBSelect3,SetGBSelect3] = React.useState("")
 const [GBSelect4,SetGBSelect4] = React.useState("")
 const [GBSelect5,SetGBSelect5] = React.useState("")
+const [GBSelect6,SetGBSelect6] = React.useState("")
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 const apiRefMain = useGridApiRef();
@@ -218,11 +220,13 @@ useEffect(() => {
       SetColourSelect3("")
       SetColourSelect4("")
       SetColourSelect5("")
+      SetColourSelect6("")
       SetGBSelect1("")
       SetGBSelect2("")
       SetGBSelect3("")
       SetGBSelect4("")
       SetGBSelect5("")
+      SetGBSelect6("")
       //Make the request to Server
       const GSMModelKey = GSMModelSelect.GSMKey
       const request = await fetch("/api/ProductManagement_GSMAttributes_AutoFill",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify({"GSMKey":GSMModelKey})})
@@ -238,11 +242,13 @@ useEffect(() => {
       SetColourSelect3(FormattedColours[2])
       SetColourSelect4(FormattedColours[3])
       SetColourSelect5(FormattedColours[4])
+      SetColourSelect6(FormattedColours[5])
       SetGBSelect1(FormattedCapacitys[0])
       SetGBSelect2(FormattedCapacitys[1])
       SetGBSelect3(FormattedCapacitys[2])
       SetGBSelect4(FormattedCapacitys[3])
       SetGBSelect5(FormattedCapacitys[4])
+      SetGBSelect6(FormattedCapacitys[5])
     }
   }
   FetchAttributesGSM();
@@ -252,9 +258,9 @@ useEffect(() => {
 
 //Format as currency
 const currencyFormatter = (params) => {
-  if (params.value == "" || params.value == "$" || params.value == null) {
+  if (params.value === "" || params.value === "$" || params.value == null) {
     return '$' + (0)
-  }if (params.value != "" && params.value != "$") {
+  }if (params.value !== "" && params.value !== "$") {
     return '$' + parseFloat((params.value)).toFixed(2);
   }
 };
@@ -334,7 +340,7 @@ const handleChangeGSMModelSelect = (event,newValue) => {
 const handleGenerateClick = () => {
   async function FetchServerGSMModelVariants() {
     SetGenerateButtonState(true)
-    //Get Prod List From Server
+    //Push Data to Server
     const GSMModelKey = gsmArenaData.filter((row) => row.Model === GSMModelSelect)[0].GSMKey
     const request = await fetch("/api/GetGSMArenaVariantsSpecificModel",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify({"GSMModel":GSMModelSelect,"GSMModelKey":GSMModelKey,"DearModel":DearModelSelect})});
     const response = await request.json()
@@ -348,7 +354,172 @@ const handleGenerateClick = () => {
 }
 
 
-//Handle Value Changed Select Colour 1
+//Handle Generate Button Click Updated
+const handleGenerateClickUpdated = () => {
+  async function FetchServerGSMModelVariants() {
+    SetGenerateButtonState(false)
+    //Fix the data
+    console.log(GBSelect1,GBSelect2,GBSelect3,GBSelect4,GBSelect5,GBSelect6)
+    console.log(ColourSelect1,ColourSelect2,ColourSelect3,ColourSelect4,ColourSelect5,ColourSelect6)  
+    const TestColour = [GBSelect1,GBSelect2,GBSelect3,GBSelect4,GBSelect5,GBSelect6]
+    console.log(TestColour)
+
+
+    return
+    //Push Data to Server
+    const ColoursRaw = []
+    const GBSRaw = [GBSelect1.label,GBSelect2.label,GBSelect3.label,GBSelect4.label,GBSelect5.label,GBSelect6.label]
+    const Colours = ColoursRaw.filter((row)=> row !== "" && row !== undefined && row !== null)
+    const GBS = GBSRaw.filter((row)=>row !== "" && row !== undefined && row !== null)
+    const DataToSendToBackend = {"Colours":Colours,"GBS":GBS}
+    console.log(ColoursRaw,GBSRaw)
+    console.log(DataToSendToBackend)
+    SetGenerateButtonState(false)
+    return
+    const request = await fetch("/api/Prod_Management_GetModelsToCreate",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify()})
+    const response = await request
+    console.log("Data Returned From Frontend:",response)
+
+  }
+  FetchServerGSMModelVariants()
+}
+
+
+//Handle Value Changes For Select Attribute Boxes
+//Colour 1 Select
+const handleChangeColourSelect1 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Colour Attribute 1 Changed",Model)
+    SetColourSelect1(Model)
+  }catch{
+    console.log("Colour Attribute 1 Cleared")
+    SetColourSelect1("")
+  }
+};
+//Colour 2 Select
+const handleChangeColourSelect2 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Colour Attribute 2 Changed",Model)
+    SetColourSelect2(Model)
+  }catch{
+    console.log("Colour Attribute 2 Cleared")
+    SetColourSelect2("")
+  }
+};
+//Colour 3 Select
+const handleChangeColourSelect3 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Colour Attribute 3 Changed",Model)
+    SetColourSelect3(Model)
+  }catch{
+    console.log("Colour Attribute 3 Cleared")
+    SetColourSelect3("")
+  }
+};
+//Colour 4 Select
+const handleChangeColourSelect4 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Colour Attribute 4 Changed",Model)
+    SetColourSelect4(Model)
+  }catch{
+    console.log("Colour Attribute 4 Cleared")
+    SetColourSelect4("")
+  }
+};
+//Colour 4 Select
+const handleChangeColourSelect5 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Colour Attribute 5 Changed",Model)
+    SetColourSelect5(Model)
+  }catch{
+    console.log("Colour Attribute 5 Cleared")
+    SetColourSelect5("")
+  }
+};
+//Colour 4 Select
+const handleChangeColourSelect6 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Colour Attribute 6 Changed",Model)
+    SetColourSelect6(Model)
+  }catch{
+    console.log("Colour Attribute 6 Cleared")
+    SetColourSelect6("")
+  }
+};
+//Capacity 1 Select
+const handleChangeCapacitySelect1 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Capacity Attribute 1 Changed",Model)
+    SetGBSelect1(Model)
+  }catch{
+    console.log("Capacity Attribute 1 Cleared")
+    SetGBSelect1("")
+  }
+};
+//Capacity 2 Select
+const handleChangeCapacitySelect2 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Capacity Attribute 2 Changed",Model)
+    SetGBSelect2(Model)
+  }catch{
+    console.log("Capacity Attribute 2 Cleared")
+    SetGBSelect2("")
+  }
+};
+//Capacity 3 Select
+const handleChangeCapacitySelect3 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Capacity Attribute 3 Changed",Model)
+    SetGBSelect3(Model)
+  }catch{
+    console.log("Capacity Attribute 3 Cleared")
+    SetGBSelect3("")
+  }
+};
+//Capacity 4 Select
+const handleChangeCapacitySelect4 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Capacity Attribute 4 Changed",Model)
+    SetGBSelect4(Model)
+  }catch{
+    console.log("Capacity Attribute 4 Cleared")
+    SetGBSelect4("")
+  }
+};
+//Capacity 5 Select
+const handleChangeCapacitySelect5 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Capacity Attribute 5 Changed",Model)
+    SetGBSelect5(Model)
+  }catch{
+    console.log("Capacity Attribute 5 Cleared")
+    SetGBSelect5("")
+  }
+};
+//Capacity 6 Select
+const handleChangeCapacitySelect6 = (event,newValue) => {
+  try{
+    const Model = newValue.label
+    console.log("Capacity Attribute 6 Changed",Model)
+    SetGBSelect6(Model)
+  }catch{
+    console.log("Capacity Attribute 6 Cleared")
+    SetGBSelect6("")
+  }
+};
+
+
 
 
 
@@ -470,7 +641,7 @@ const getTogglableColumns = (columns) => {
 
       <ThemeProvider theme={theme}>
         <div style={{width: "7.5%", float: "left",height:"95%"}} className="pr-2">
-        <LoadingButton onClick={handleGenerateClick} loading={generateButtonState} variant="contained" color="primary" style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DoubleArrowIcon />}>Generate</LoadingButton>
+        <LoadingButton onClick={handleGenerateClickUpdated} loading={generateButtonState} variant="contained" color="primary" style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DoubleArrowIcon />}>Generate</LoadingButton>
         </div>
         <div style={{width: "7.5%", float: "left",height:"95%"}} className="pr-2">
         <LoadingButton onClick={""} loading={pushDearButtonState} variant="contained" color="secondary" style={{width: "100%",height:"100%",float:"left"}} loadingPosition="start" startIcon={<DownloadIcon />}>Download</LoadingButton>
@@ -480,15 +651,15 @@ const getTogglableColumns = (columns) => {
       </div>
 
 
-      <div style={{width: "69.7%", float: "left"}} className="bg-white mb-3 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
+      <div style={{width: "69.4%", float: "left"}} className="bg-white mb-3 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
         Attributes:
       </div>
 
       <div style={{width: "100%", height: "fit-content"}} className="mb-2">
 
-      <div style={{width: "80%",height:"100%", float:"left"}} className="mr-2">
+      <div style={{width: "70%",height:"100%", float:"left"}} className="mr-2">
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -497,14 +668,14 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={ColourSelect1}
           options={GSMReturnedColours}
-          onChange={""}
+          onChange={handleChangeColourSelect1}
           renderInput={(params) => <TextField {...params} label="1.Colour" />}
         >
         </Autocomplete>
       </FormControl>
       </div>
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -513,14 +684,14 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={ColourSelect2}
           options={GSMReturnedColours}
-          onChange={""}
+          onChange={handleChangeColourSelect2}
           renderInput={(params) => <TextField {...params} label="2.Colour" />}
         >
         </Autocomplete>
       </FormControl>
       </div>
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -529,14 +700,14 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={ColourSelect3}
           options={GSMReturnedColours}
-          onChange={""}
+          onChange={handleChangeColourSelect3}
           renderInput={(params) => <TextField {...params} label="3.Colour" />}
         >
         </Autocomplete>
       </FormControl>
       </div>
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -545,14 +716,14 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={ColourSelect4}
           options={GSMReturnedColours}
-          onChange={""}
+          onChange={handleChangeColourSelect4}
           renderInput={(params) => <TextField {...params} label="4.Colour" />}
         >
         </Autocomplete>
       </FormControl>
       </div>
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -561,8 +732,24 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={ColourSelect5}
           options={GSMReturnedColours}
-          onChange={""}
+          onChange={handleChangeColourSelect5}
           renderInput={(params) => <TextField {...params} label="5.Colour" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "16%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={ColourSelect6}
+          options={GSMReturnedColours}
+          onChange={handleChangeColourSelect6}
+          renderInput={(params) => <TextField {...params} label="6.Colour" />}
         >
         </Autocomplete>
       </FormControl>
@@ -575,9 +762,9 @@ const getTogglableColumns = (columns) => {
 
       <div style={{width: "100%", height: "fit-content"}} className="mb-2">
 
-      <div style={{width: "80%",height:"100%", float:"left"}} className="mr-2">
+      <div style={{width: "70%",height:"100%", float:"left"}} className="mr-2">
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -586,14 +773,14 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={GBSelect1}
           options={GSMReturnedCapacitys}
-          onChange={""}
+          onChange={handleChangeCapacitySelect1}
           renderInput={(params) => <TextField {...params} label="1.Capacity" />}
         >
         </Autocomplete>
       </FormControl>
       </div>
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -602,14 +789,14 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={GBSelect2}
           options={GSMReturnedCapacitys}
-          onChange={""}
+          onChange={handleChangeCapacitySelect2}
           renderInput={(params) => <TextField {...params} label="2.Capacity" />}
         >
         </Autocomplete>
       </FormControl>
       </div>
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -618,14 +805,14 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={GBSelect3}
           options={GSMReturnedCapacitys}
-          onChange={""}
+          onChange={handleChangeCapacitySelect3}
           renderInput={(params) => <TextField {...params} label="3.Capacity" />}
         >
         </Autocomplete>
       </FormControl>
       </div>
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -634,14 +821,14 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={GBSelect4}
           options={GSMReturnedCapacitys}
-          onChange={""}
+          onChange={handleChangeCapacitySelect4}
           renderInput={(params) => <TextField {...params} label="4.Capacity" />}
         >
         </Autocomplete>
       </FormControl>
       </div>
 
-      <div style={{width: "17%",float: "left"}} className="mr-2">
+      <div style={{width: "16%",float: "left"}} className="mr-2">
       <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
         <Autocomplete
           disablePortal
@@ -650,8 +837,24 @@ const getTogglableColumns = (columns) => {
           freeSolo
           value={GBSelect5}
           options={GSMReturnedCapacitys}
-          onChange={""}
+          onChange={handleChangeCapacitySelect5}
           renderInput={(params) => <TextField {...params} label="5.Capacity" />}
+        >
+        </Autocomplete>
+      </FormControl>
+      </div>
+
+      <div style={{width: "16%",float: "left"}} className="mr-2">
+      <FormControl style={{width: "100%"}} size="small" className="bg-white rounded">
+        <Autocomplete
+          disablePortal
+          labelId="combo-box-demo"
+          size="small"
+          freeSolo
+          value={GBSelect6}
+          options={GSMReturnedCapacitys}
+          onChange={handleChangeCapacitySelect6}
+          renderInput={(params) => <TextField {...params} label="6.Capacity" />}
         >
         </Autocomplete>
       </FormControl>
