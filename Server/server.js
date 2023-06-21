@@ -618,6 +618,95 @@ app.post("/api/ProductManagement_GSMAttributes_AutoFill",(req,res)=>{
 })
 
 
+//Fill in the missing models
+app.post("/api/Prod_Management_GetModelsToCreate",(req,res)=>{
+  async function getGSMVariantsSpeceificModel(){
+    try{
+      //Get Data From Frontend
+      const FrontendData = req.body
+      const FrontEndModel = FrontendData.Model
+
+      //Get Prod List
+      const ProdListURL = await fetch(`https://api.renewablemobile.com.au/dear/product/?fields=SKU,Name,PriceTier1,AdditionalAttribute1,AdditionalAttribute2,AdditionalAttribute3,AdditionalAttribute4,AdditionalAttribute5,AdditionalAttribute6,AdditionalAttribute7&Name=AND(LIKE(${FrontEndModel}),LIKE(Renewed))`,{method: "GET", headers: {"auth":"Jindalee1!"}})
+      const ProdListResponse = await ProdListURL.json()
+
+      //Summarize prod list to only include model chosen
+      const summarizedProdList = []
+      ProdListResponse.Items.forEach((row)=>{
+        const BrandProd = row.AdditionalAttribute1
+        const ModelProd = row.AdditionalAttribute2
+        const ModelToCheck = BrandProd+" "+ModelProd
+
+        if(ModelToCheck == FrontEndModel){
+          summarizedProdList.push({row})
+        }
+          
+      })
+
+      //Possible Variants
+      const PossibleGrades = ["A","B+","B-","C+"] //Need to workout how to do battery 70%
+      const PossibleBatterys = ["New Battery","85%+","80%+"] //Need to workout how to do battery 70%
+      const PossibleColours = FrontendData.Colours
+      const PossibleGBs = FrontendData.GBS
+      const Brand = FrontEndModel.split(" ")[0].trim()
+      const Model = FrontEndModel.replace(Brand,"").trim()
+
+      //Loop through and create variants then check against dear to see if in system or not
+      VariantsNotExisting = []
+      PossibleGBs.forEach((rowGB)=>{
+        const GB = rowGB
+
+        PossibleColours.forEach((rowColour)=>{
+          const Colour = rowColour
+
+          PossibleBatterys.forEach((rowBattery)=>{
+            const Battery = rowBattery
+
+            PossibleGrades.forEach((rowGrade)=>{
+              const Grade = rowGrade
+              let FoundMatch = false
+              const CombinationGSMToCheck = Brand+" "+Model+" "+GB+" "+Colour+" "+"None"+" "+Battery+" "+Grade
+              const AttributesFromGSM = {"Brand":Brand,"Model":Model,"GB":GB,"Colour":Colour,"Connectivity":"None","Battery":Battery,"Grade":Grade}
+              
+              //Loop throught prod list to see if these attributes don't match and if not make it
+              summarizedProdList.forEach((rowProdList)=>{
+                if(FoundMatch === false){
+                  const BrandProdList = rowProdList.row.AdditionalAttribute1
+                  const ModelProdList = rowProdList.row.AdditionalAttribute2
+                  const GBProdList = rowProdList.row.AdditionalAttribute3
+                  const ColourProdList = rowProdList.row.AdditionalAttribute4
+                  const ConnectivityProdList = rowProdList.row.AdditionalAttribute5
+                  const BatteryProdList = rowProdList.row.AdditionalAttribute6
+                  const GradeProdList = rowProdList.row.AdditionalAttribute7
+                  const CombinationToCheckProd = BrandProdList+" "+ModelProdList+" "+GBProdList+" "+ColourProdList+" "+ConnectivityProdList+" "+BatteryProdList+" "+GradeProdList
+
+                  if(CombinationGSMToCheck === CombinationToCheckProd){
+                    FoundMatch = true
+                  }
+                }
+              })
+  
+              //If No Match Push New Variant To Be Made
+              if(FoundMatch == false){
+                VariantsNotExisting.push(AttributesFromGSM)
+              }
+
+            })
+          })
+        })
+      })
+
+      console.log("Variants Not Existing Pushed To Frontend Successfully")
+      res.json({VariantsNotExisting}).status(200)
+    }catch (error){
+      console.log(error)
+    }
+  }
+  getGSMVariantsSpeceificModel()
+})
+
+
+
 
 
 //Launch the backend server

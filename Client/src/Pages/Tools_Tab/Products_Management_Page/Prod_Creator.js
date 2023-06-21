@@ -305,20 +305,27 @@ const onRowsSelectionHandler = (ids) => {
 //Handle Dear Model Changed
 const handleChangeModelDearSelect = (event,newValue) => {
     try{
-      SetDearModelSelect(newValue.label);
-      console.log("New Dear Model Selected By User:",newValue.label)
-    }catch{
+      if(newValue.label !== undefined){
+        SetDearModelSelect(newValue.label);
+        console.log("New Dear Model Selected By User:",newValue.label)
+      }if(newValue.label === undefined){
+        SetDearModelSelect(newValue);
+        console.log("New Dear Model Selected By User:",newValue)
+      }
+    }
+    catch{
       SetDearModelSelect("");
       SetGSMModelSelect({"Model":""})
       console.log("Dear Model Cleared By User")
     }
+
     try{
-    const FilteredGSMModel = GSMArenaModelList.filter((row)=>row.label === newValue.label)[0].label
-    const KeyGSMModelSelected = gsmArenaData.filter((row)=>row.Model === newValue.label)[0].GSMKey
-    SetGSMModelSelect({"Model":FilteredGSMModel,"GSMKey":KeyGSMModelSelected})
-    console.log("GSM AUTO Matched Model:",FilteredGSMModel)
+      const FilteredGSMModel = GSMArenaModelList.filter((row)=>row.label === newValue.label)[0].label
+      const KeyGSMModelSelected = gsmArenaData.filter((row)=>row.Model === newValue.label)[0].GSMKey
+      SetGSMModelSelect({"Model":FilteredGSMModel,"GSMKey":KeyGSMModelSelected})
+      console.log("GSM AUTO Matched Model:",FilteredGSMModel)
     }catch{
-      console.log("Dear Model Select Fail")
+      console.log("Dear Model to GSM Model Select Fail")
     }
 };
 
@@ -358,28 +365,30 @@ const handleGenerateClick = () => {
 const handleGenerateClickUpdated = () => {
   async function FetchServerGSMModelVariants() {
     SetGenerateButtonState(false)
-    //Fix the data
-    console.log(GBSelect1,GBSelect2,GBSelect3,GBSelect4,GBSelect5,GBSelect6)
-    console.log(ColourSelect1,ColourSelect2,ColourSelect3,ColourSelect4,ColourSelect5,ColourSelect6)  
-    const TestColour = [GBSelect1,GBSelect2,GBSelect3,GBSelect4,GBSelect5,GBSelect6]
-    console.log(TestColour)
+    //Format the data
+    const ColoursRaw = [ColourSelect1,ColourSelect2,ColourSelect3,ColourSelect4,ColourSelect5,ColourSelect6]
+    const GBRaw = [GBSelect1,GBSelect2,GBSelect3,GBSelect4,GBSelect5,GBSelect6]
+    const Colours = []
+    const GBS = []
+    ColoursRaw.forEach((row)=>{
+      try{
+        Colours.push(row.label)
+      }catch{
+      }
+    })
+    GBRaw.forEach((row)=>{
+      try{
+        GBS.push(row.label)
+      }catch{
+      }
+    })
 
-
-    return
+    const DataToSendToBackend = {"Colours":Colours,"GBS":GBS,"Model":DearModelSelect}
+    console.log("Data Sending Backend - Generate Button",DataToSendToBackend)
     //Push Data to Server
-    const ColoursRaw = []
-    const GBSRaw = [GBSelect1.label,GBSelect2.label,GBSelect3.label,GBSelect4.label,GBSelect5.label,GBSelect6.label]
-    const Colours = ColoursRaw.filter((row)=> row !== "" && row !== undefined && row !== null)
-    const GBS = GBSRaw.filter((row)=>row !== "" && row !== undefined && row !== null)
-    const DataToSendToBackend = {"Colours":Colours,"GBS":GBS}
-    console.log(ColoursRaw,GBSRaw)
-    console.log(DataToSendToBackend)
-    SetGenerateButtonState(false)
-    return
-    const request = await fetch("/api/Prod_Management_GetModelsToCreate",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify()})
-    const response = await request
+    const request = await fetch("/api/Prod_Management_GetModelsToCreate",{method: "POST",headers: { "Content-Type": "application/json" },body: JSON.stringify(DataToSendToBackend)})
+    const response = await request.json()
     console.log("Data Returned From Frontend:",response)
-
   }
   FetchServerGSMModelVariants()
 }
@@ -389,9 +398,15 @@ const handleGenerateClickUpdated = () => {
 //Colour 1 Select
 const handleChangeColourSelect1 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Colour Attribute 1 Changed",Model)
-    SetColourSelect1(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Colour Attribute 1 Changed - Options",Model)
+      SetColourSelect1(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Colour Attribute 1 Changed - Typed Value",Model)
+      SetColourSelect1(Model)
+    }
   }catch{
     console.log("Colour Attribute 1 Cleared")
     SetColourSelect1("")
@@ -400,9 +415,15 @@ const handleChangeColourSelect1 = (event,newValue) => {
 //Colour 2 Select
 const handleChangeColourSelect2 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Colour Attribute 2 Changed",Model)
-    SetColourSelect2(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Colour Attribute 2 Changed",Model)
+      SetColourSelect2(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Colour Attribute 2 Changed",Model)
+      SetColourSelect2(Model)
+    }
   }catch{
     console.log("Colour Attribute 2 Cleared")
     SetColourSelect2("")
@@ -411,9 +432,15 @@ const handleChangeColourSelect2 = (event,newValue) => {
 //Colour 3 Select
 const handleChangeColourSelect3 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Colour Attribute 3 Changed",Model)
-    SetColourSelect3(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Colour Attribute 3 Changed",Model)
+      SetColourSelect3(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Colour Attribute 3 Changed",Model)
+      SetColourSelect3(Model)
+    }
   }catch{
     console.log("Colour Attribute 3 Cleared")
     SetColourSelect3("")
@@ -422,9 +449,15 @@ const handleChangeColourSelect3 = (event,newValue) => {
 //Colour 4 Select
 const handleChangeColourSelect4 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Colour Attribute 4 Changed",Model)
-    SetColourSelect4(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Colour Attribute 4 Changed",Model)
+      SetColourSelect4(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Colour Attribute 4 Changed",Model)
+      SetColourSelect4(Model)
+    }
   }catch{
     console.log("Colour Attribute 4 Cleared")
     SetColourSelect4("")
@@ -433,9 +466,15 @@ const handleChangeColourSelect4 = (event,newValue) => {
 //Colour 4 Select
 const handleChangeColourSelect5 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Colour Attribute 5 Changed",Model)
-    SetColourSelect5(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Colour Attribute 5 Changed",Model)
+      SetColourSelect5(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Colour Attribute 5 Changed",Model)
+      SetColourSelect5(Model)
+    }
   }catch{
     console.log("Colour Attribute 5 Cleared")
     SetColourSelect5("")
@@ -444,9 +483,15 @@ const handleChangeColourSelect5 = (event,newValue) => {
 //Colour 4 Select
 const handleChangeColourSelect6 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Colour Attribute 6 Changed",Model)
-    SetColourSelect6(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Colour Attribute 6 Changed",Model)
+      SetColourSelect6(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Colour Attribute 6 Changed",Model)
+      SetColourSelect6(Model)
+    }
   }catch{
     console.log("Colour Attribute 6 Cleared")
     SetColourSelect6("")
@@ -455,9 +500,15 @@ const handleChangeColourSelect6 = (event,newValue) => {
 //Capacity 1 Select
 const handleChangeCapacitySelect1 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Capacity Attribute 1 Changed",Model)
-    SetGBSelect1(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Capacity Attribute 1 Changed",Model)
+      SetGBSelect1(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Capacity Attribute 1 Changed",Model)
+      SetGBSelect1(Model)
+    }
   }catch{
     console.log("Capacity Attribute 1 Cleared")
     SetGBSelect1("")
@@ -466,9 +517,15 @@ const handleChangeCapacitySelect1 = (event,newValue) => {
 //Capacity 2 Select
 const handleChangeCapacitySelect2 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Capacity Attribute 2 Changed",Model)
-    SetGBSelect2(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Capacity Attribute 2 Changed",Model)
+      SetGBSelect2(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Capacity Attribute 2 Changed",Model)
+      SetGBSelect2(Model)
+    }
   }catch{
     console.log("Capacity Attribute 2 Cleared")
     SetGBSelect2("")
@@ -477,9 +534,15 @@ const handleChangeCapacitySelect2 = (event,newValue) => {
 //Capacity 3 Select
 const handleChangeCapacitySelect3 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Capacity Attribute 3 Changed",Model)
-    SetGBSelect3(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Capacity Attribute 3 Changed",Model)
+      SetGBSelect3(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Capacity Attribute 3 Changed",Model)
+      SetGBSelect3(Model)
+    }
   }catch{
     console.log("Capacity Attribute 3 Cleared")
     SetGBSelect3("")
@@ -488,9 +551,15 @@ const handleChangeCapacitySelect3 = (event,newValue) => {
 //Capacity 4 Select
 const handleChangeCapacitySelect4 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Capacity Attribute 4 Changed",Model)
-    SetGBSelect4(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Capacity Attribute 4 Changed",Model)
+      SetGBSelect4(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Capacity Attribute 4 Changed",Model)
+      SetGBSelect4(Model)
+    }
   }catch{
     console.log("Capacity Attribute 4 Cleared")
     SetGBSelect4("")
@@ -499,9 +568,15 @@ const handleChangeCapacitySelect4 = (event,newValue) => {
 //Capacity 5 Select
 const handleChangeCapacitySelect5 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Capacity Attribute 5 Changed",Model)
-    SetGBSelect5(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Capacity Attribute 5 Changed",Model)
+      SetGBSelect5(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Capacity Attribute 5 Changed",Model)
+      SetGBSelect5(Model)
+    }
   }catch{
     console.log("Capacity Attribute 5 Cleared")
     SetGBSelect5("")
@@ -510,9 +585,15 @@ const handleChangeCapacitySelect5 = (event,newValue) => {
 //Capacity 6 Select
 const handleChangeCapacitySelect6 = (event,newValue) => {
   try{
-    const Model = newValue.label
-    console.log("Capacity Attribute 6 Changed",Model)
-    SetGBSelect6(Model)
+    if(newValue.label !== undefined){
+      const Model = newValue.label
+      console.log("Capacity Attribute 6 Changed",Model)
+      SetGBSelect6(Model)
+    }if(newValue.label === undefined){
+      const Model = newValue
+      console.log("Capacity Attribute 6 Changed",Model)
+      SetGBSelect6(Model)
+    }
   }catch{
     console.log("Capacity Attribute 6 Cleared")
     SetGBSelect6("")
@@ -614,6 +695,10 @@ const getTogglableColumns = (columns) => {
           disablePortal
           labelId="combo-box-demo"
           size="small"
+          freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={DearModelSelect}
           options={ModelList}
           onChange={handleChangeModelDearSelect}
@@ -666,6 +751,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={ColourSelect1}
           options={GSMReturnedColours}
           onChange={handleChangeColourSelect1}
@@ -682,6 +770,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={ColourSelect2}
           options={GSMReturnedColours}
           onChange={handleChangeColourSelect2}
@@ -698,6 +789,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={ColourSelect3}
           options={GSMReturnedColours}
           onChange={handleChangeColourSelect3}
@@ -714,6 +808,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={ColourSelect4}
           options={GSMReturnedColours}
           onChange={handleChangeColourSelect4}
@@ -730,6 +827,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={ColourSelect5}
           options={GSMReturnedColours}
           onChange={handleChangeColourSelect5}
@@ -746,6 +846,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={ColourSelect6}
           options={GSMReturnedColours}
           onChange={handleChangeColourSelect6}
@@ -771,6 +874,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={GBSelect1}
           options={GSMReturnedCapacitys}
           onChange={handleChangeCapacitySelect1}
@@ -787,6 +893,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={GBSelect2}
           options={GSMReturnedCapacitys}
           onChange={handleChangeCapacitySelect2}
@@ -803,6 +912,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={GBSelect3}
           options={GSMReturnedCapacitys}
           onChange={handleChangeCapacitySelect3}
@@ -819,6 +931,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={GBSelect4}
           options={GSMReturnedCapacitys}
           onChange={handleChangeCapacitySelect4}
@@ -835,6 +950,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={GBSelect5}
           options={GSMReturnedCapacitys}
           onChange={handleChangeCapacitySelect5}
@@ -851,6 +969,9 @@ const getTogglableColumns = (columns) => {
           labelId="combo-box-demo"
           size="small"
           freeSolo
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
           value={GBSelect6}
           options={GSMReturnedCapacitys}
           onChange={handleChangeCapacitySelect6}
