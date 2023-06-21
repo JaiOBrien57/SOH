@@ -117,6 +117,13 @@ export const Routes_Import = () =>{
     navigate(path);
     }
 
+    //Handle All_Parts_Go_To
+    const handleSOH_All_Parts = () => {
+      setAnchorEl(null);
+      let path = "/SOH_All_Parts";
+      navigate(path);
+    }
+
 
   //Render the default page
   function HomePageNoLink(){
