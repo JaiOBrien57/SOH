@@ -34,6 +34,21 @@ const SaleURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale"
 const SaleOrderURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale/order"
 
 
+//Recieve parts list
+app.get("/api/allparts", (req, res) => {
+  async function getAllParts(){
+    const partsRequest = await fetch("https://api.renewablemobile.com.au/dear/product?fields=ID,SKU,Name&PulledPart/Part=Part", {method: "GET", headers: {"auth":"Jindalee1!"}})
+    const partsResponse = await partsRequest.json()
+
+    //Sending results back
+    res.json(partsResponse).status(200)
+    console.log("Renewed Devices Avail List has Been Fetched and Formatted")
+    res.json("ERROR").status(500)
+    console.log("Avail list fetch fail:",error)
+  }
+  
+})
+
 //Receive avail list
 app.get("/api/renewedDevicesList", (req, res) => {
   async function getAvailList(){

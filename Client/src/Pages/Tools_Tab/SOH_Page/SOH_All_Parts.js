@@ -86,7 +86,7 @@ const apiRefSelectTable = useGridApiRef();
 //Get the avail List
 useEffect(() => {
   async function FetchAvail() {
-    const request = await fetch("/api/renewedDevicesList");
+    const request = await fetch("/api/allparts");
     const response = await request.json()
     if (response === "ERROR") {
       SetDearDataFetchedStatus(500)
