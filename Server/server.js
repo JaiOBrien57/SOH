@@ -37,7 +37,7 @@ const SaleOrderURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale/orde
 //Recieve parts list
 app.get("/api/allparts", (req, res) => {
   async function getAllParts(){
-    const partsRequest = await fetch("https://api.renewablemobile.com.au/dear/product?fields=ID,SKU,Name&PulledPart/Part=Part", {method: "GET", headers: {"auth":"Jindalee1!"}})
+    const partsRequest = await fetch("https://api.renewablemobile.com.au/dear/product?fields=ID,SKU,Name&AdditonalAttribute6=EXACT(Part)", {method: "GET", headers: {"auth":"Jindalee1!"}})
     const partsResponse = await partsRequest.json()
 
     //Sending results back
