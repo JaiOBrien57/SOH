@@ -36,18 +36,153 @@ const SaleOrderURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale/orde
 
 //Recieve parts list
 app.get("/api/allparts", (req, res) => {
-  async function getAllParts(){
-    const partsRequest = await fetch("https://api.renewablemobile.com.au/dear/product?fields=ID,SKU,Name&AdditonalAttribute6=EXACT(Part)", {method: "GET", headers: {"auth":"Jindalee1!"}})
-    const partsResponse = await partsRequest.json()
+  async function getAvailList(){
+  try{
+    //Get the avail list
+      const availRequest = await fetch("https://api.renewablemobile.com.au/dear/productavailability?fields=ID,SKU,Name,Available,Location,Bin&Name=LIKE(Renewed)&includeproduct=true",{method: "GET", headers: {"auth":"Jindalee1!"}})
+      const availResponse = await availRequest.json()
+
+    //Loop through to get the list formatted for Dealer Cage and Refurb Cage QTY
+    //Get the unique array from avail SKU'S
+    var availUnique = []
+    var cacheArray = []
+    availResponse.Items.forEach(element => {
+      var SKU = element.SKU
+      var Name = element.Name
+      var IDDear = element.ID
+      var PriceTier1 = element.Product.PriceTier1
+      var Brand = element.Product.AdditionalAttribute1
+      var Model = element.Product.AdditionalAttribute2
+      var AVGCost = element.Product.AverageCost
+      var PriceTierAVGCost = element.Product.PriceTier6
+      if (Model == null || Model == "") {
+        Model="UNKOWN"
+      }
+      var GB = element.Product.AdditionalAttribute3
+      var Colour = element.Product.AdditionalAttribute4
+      var Connectivity = element.Product.AdditionalAttribute5
+      var Battery = element.Product.AdditionalAttribute6
+      var Grade = element.Product.AdditionalAttribute7
+    
+      if (Model.includes("iPad")) {
+        var FinalModel = Brand+" "+Model+" "+GB+" "+Connectivity
+      }if (!Model.includes("iPad")) {
+        var FinalModel = Brand+" "+Model+" "+GB
+      }
+
+      if (Battery == "New Battery") {
+        Battery = "100%"
+      }
+
+    
+      if(!cacheArray.includes(SKU) && Name.includes("Renewed")){
+        cacheArray.push(SKU)
+        availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":PriceTierAVGCost})
+      }
+
+    })
+
+    //Sum the unique against full array
+    var availFormatted = []
+    availUnique.forEach(element => {
+      var SKU = element.SKU
+      var Name = element.Name
+      var IDDear = element.ID
+      var CageQTY = 0
+      var RefurbCageTwoQTY = 0
+      var TotalQTY = 0
+      var DealerPrice = element.DealerPrice
+      var FinalModel = element.FinalModel
+      var Grade = element.Grade
+      var Battery = element.Battery
+      var AVGCost = element.AVGCost
+      var Colour = element.Colour
+      var PriceTierAVGCost = element.AVGPriceTier
+
+      availResponse.Items.forEach(elementTwo => {
+        var SKUBulk = elementTwo.SKU
+        var AvailableQTYBulk = parseInt(elementTwo.Available)
+        var LocationBulk = elementTwo.Location
+        var BinBulk = elementTwo.Bin
+        
+        if(SKU == SKUBulk && LocationBulk == "BNE - Main Warehouse" && BinBulk == "Cage" && AvailableQTYBulk > 0){
+          CageQTY = CageQTY+AvailableQTYBulk
+        }
+
+        if(SKU == SKUBulk && LocationBulk == "BNE - CAGE - Refurb 2 (106.2)" && AvailableQTYBulk > 0){
+          RefurbCageTwoQTY = RefurbCageTwoQTY+AvailableQTYBulk
+        } 
+
+      })
+
+      TotalQTY = CageQTY+RefurbCageTwoQTY
+
+      if(CageQTY != "" || RefurbCageTwoQTY != ""){
+        availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":PriceTierAVGCost})
+      }
+
+    });
+
+    //Sort the array by name
+    availFormatted.sort((a,b)=>{if (a.FinalModel < b.FinalModel) {
+      return -1;
+    }
+    if (a.FinalModel > b.FinalModel) {
+      return 1;
+    }
+    return 0;})
+
+    //Query the SQL Database
+    const SQLRes = await client.query(`SELECT * FROM public."SOH_Pricing_Management" ORDER BY "Model" ASC `)
+    const SQLRows = await SQLRes.rows
+
+    const FinalArrayWithSQLData = []
+    availFormatted.forEach((row)=>{
+      const IDDear = row.IDDear
+      const SKU = row.SKU
+      const Name = row.Name
+      const AvailableCage = row.AvailableCage
+      const AvailableRefurbCage = row.AvailableRefurbCage
+      const DealerPrice = row.DealerPrice
+      const TotalQTY = row.TotalQTY
+      const FinalModel = row.FinalModel
+      const Grade = row.Grade
+      const Battery = row.Battery
+      const AVGCost = row.AVGCost
+      const Colour = row.Colour
+      const AVGPriceTier = row.AVGPriceTier
+      let Checker = false
+      let BXT_Lowest_Price = ""
+
+      SQLRows.forEach((rowSQL)=>{
+        const ModelSQL = rowSQL.Model
+        const BXTLowestSQL = rowSQL.BXT_Lowest_Price
+
+        if(Checker === false && ModelSQL === FinalModel){
+          BXT_Lowest_Price = BXTLowestSQL
+          Checker = true
+        }
+      })
+
+      //Run the for each for the extra Bulk Trader Price Tier ***Check Email
+      if(AVGCost/DealerPrice < 40)
+
+      FinalArrayWithSQLData.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":AvailableCage,"AvailableRefurbCage":AvailableRefurbCage,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":AVGPriceTier,"BXT_Lowest_Price":BXT_Lowest_Price})
+
+    })
+
+
 
     //Sending results back
-    res.json(partsResponse).status(200)
-    console.log("Renewed Devices Avail List has Been Fetched and Formatted")
-    res.json("ERROR").status(500)
-    console.log("Avail list fetch fail:",error)
+      res.json(FinalArrayWithSQLData).status(200)
+      console.log("Renewed Devices Avail List has Been Fetched and Formatted")
+    }catch(error){
+      res.json("ERROR").status(500)
+      console.log("Avail list fetch fail:",error)
+    }
   }
-  
-})
+  getAvailList()
+});
 
 //Receive avail list
 app.get("/api/renewedDevicesList", (req, res) => {
