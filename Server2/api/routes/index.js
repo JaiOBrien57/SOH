@@ -40,7 +40,7 @@ router.get('/product', async function(req, res, next) {
 
         if(!cacheArray.includes(element.SKU)) {
           cacheArray.push(element.SKU)
-          availUnique.push({"SKU": element.SKU, "Name": element.Name, "ID": element.ID, "AvailableCage": CageQTY, "AvailableRefurbCage": RefurbCageTwoQTY, "DealerPrice": element.PriceTier1, "TotalQTY": TotalQTY, "FinalModel": FinalModel, "Grade": element.AdditionalAttribute5, "Battery": element.AdditionalAttribute6, "AVGCost": element.AverageCost, "Colour": element.AdditionalAttribute4, "AVGPriceTier": element.PriceTier6, "BXT_Lowest_Price": 0})
+          availUnique.push({"SKU": element.SKU, "Name": element.Name, "ID": element.ID, "AvailableCage": CageQTY, "AvailableRefurbCage": RefurbCageTwoQTY, "DealerPrice": element.PriceTier1, "TotalQTY": TotalQTY, "FinalModel": FinalModel, "Grade": element.AdditionalAttribute5, "Battery": element.AdditionalAttribute6, "AVGCost": element.AverageCost, "Colour": element.AdditionalAttribute4, "AVGPriceTier": element.PriceTier6})
         }
 
         availUnique.sort((a,b)=>{if (a.FinalModel < b.FinalModel) {
