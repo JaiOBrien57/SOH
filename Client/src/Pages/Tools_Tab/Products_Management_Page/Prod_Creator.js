@@ -36,6 +36,15 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import { json } from "react-router-dom";
+import List from '@mui/material/List';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Checkbox from '@mui/material/Checkbox';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
 
 
 const theme = createTheme({
@@ -60,6 +69,18 @@ const theme = createTheme({
     },
   },
 });
+
+function not(a, b) {
+  return a.filter((value) => b.indexOf(value) === -1);
+}
+
+function intersection(a, b) {
+  return a.filter((value) => b.indexOf(value) !== -1);
+}
+
+function union(a, b) {
+  return [...a, ...not(b, a)];
+}
 
 export default function Prod_Creator() {
 
@@ -96,6 +117,12 @@ const [GBSelect3,SetGBSelect3] = React.useState("")
 const [GBSelect4,SetGBSelect4] = React.useState("")
 const [GBSelect5,SetGBSelect5] = React.useState("")
 const [GBSelect6,SetGBSelect6] = React.useState("")
+//Sates For Transfer List
+const [checked, setChecked] = React.useState([]);
+const [left, setLeft] = React.useState([]);
+const [right, setRight] = React.useState(["Cosmic Black","Red"]);
+const leftChecked = intersection(checked, left);
+const rightChecked = intersection(checked, right);
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 const apiRefMain = useGridApiRef();
@@ -234,6 +261,7 @@ useEffect(() => {
       const FormattedColours = response.Colours.map((row)=>({label:row}))
       const FormattedCapacitys = response.GBS.map((row)=>({label:row}))
       console.log("Attributes GSM Returned",GSMModelKey,response)
+      setLeft(response.Colours)
       SetGSMReturnedColours(FormattedColours)
       SetGSMReturnedCapacitys(FormattedCapacitys)
       //Auto Fill the select boxes
@@ -659,6 +687,103 @@ function CustomPagination(props) {
 }
 
 
+//Setup the trasnfer list
+const handleToggle = (value) => () => {
+  const currentIndex = checked.indexOf(value);
+  const newChecked = [...checked];
+
+  if (currentIndex === -1) {
+    newChecked.push(value);
+  } else {
+    newChecked.splice(currentIndex, 1);
+  }
+
+  setChecked(newChecked);
+};
+
+const numberOfChecked = (items) => intersection(checked, items).length;
+
+const handleToggleAll = (items) => () => {
+  if (numberOfChecked(items) === items.length) {
+    setChecked(not(checked, items));
+  } else {
+    setChecked(union(checked, items));
+  }
+};
+
+const handleCheckedRight = () => {
+  setRight(right.concat(leftChecked));
+  setLeft(not(left, leftChecked));
+  setChecked(not(checked, leftChecked));
+};
+
+const handleCheckedLeft = () => {
+  setLeft(left.concat(rightChecked));
+  setRight(not(right, rightChecked));
+  setChecked(not(checked, rightChecked));
+};
+
+const customList = (title, items) => (
+  <Card>
+    <CardHeader
+      sx={{ px: 2, py: 1 }}
+      avatar={
+        <Checkbox
+          onClick={handleToggleAll(items)}
+          checked={numberOfChecked(items) === items.length && items.length !== 0}
+          indeterminate={
+            numberOfChecked(items) !== items.length && numberOfChecked(items) !== 0
+          }
+          disabled={items.length === 0}
+          inputProps={{
+            'aria-label': 'all items selected',
+          }}
+        />
+      }
+      title={title}
+      subheader={`${numberOfChecked(items)}/${items.length} selected`}
+    />
+    <Divider />
+    <List
+      sx={{
+        width: 200,
+        height: 230,
+        bgcolor: 'background.paper',
+        overflow: 'auto',
+      }}
+      dense
+      component="div"
+      role="list"
+    >
+      {items.map((value) => {
+        const labelId = `transfer-list-all-item-${value}-label`;
+
+        return (
+          <ListItem
+            key={value}
+            role="listitem"
+            button
+            onClick={handleToggle(value)}
+          >
+            <ListItemIcon>
+              <Checkbox
+                checked={checked.indexOf(value) !== -1}
+                tabIndex={-1}
+                disableRipple
+                inputProps={{
+                  'aria-labelledby': labelId,
+                }}
+              />
+            </ListItemIcon>
+            <ListItemText id={labelId} primary={`${value}`} />
+          </ListItem>
+        );
+      })}
+    </List>
+  </Card>
+);
+
+
 
 //Hidden column filter fields from main table
 const hiddenFieldsMainTable = ['id', 'IDDear',"TotalQTY"];
@@ -985,6 +1110,35 @@ const getTogglableColumns = (columns) => {
       </div>
 
       </div>
+
+      <Grid container spacing={2} justifyContent="center" alignItems="center" className="mb-2">
+      <Grid item>{customList('GSM/Added', left)}</Grid>
+      <Grid item>
+        <Grid container direction="column" alignItems="center">
+          <Button
+            sx={{ my: 0.5 }}
+            variant="outlined"
+            size="small"
+            onClick={handleCheckedRight}
+            disabled={leftChecked.length === 0}
+            aria-label="move selected right"
+          >
+            &gt;
+          </Button>
+          <Button
+            sx={{ my: 0.5 }}
+            variant="outlined"
+            size="small"
+            onClick={handleCheckedLeft}
+            disabled={rightChecked.length === 0}
+            aria-label="move selected left"
+          >
+            &lt;
+          </Button>
+        </Grid>
+      </Grid>
+      <Grid item>{customList('DEAR', right)}</Grid>
+    </Grid>
       
       <DataGrid
         className='bg-white flexChild'
