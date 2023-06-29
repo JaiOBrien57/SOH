@@ -86,7 +86,7 @@ const apiRefSelectTable = useGridApiRef();
 //Get the avail List
 useEffect(() => {
   async function FetchAvail() {
-    const request = await fetch("/api/renewedDevicesList");
+    const request = await fetch("/api/allparts");
     const response = await request.json()
     if (response === "ERROR") {
       SetDearDataFetchedStatus(500)
@@ -105,7 +105,7 @@ useEffect(() => {
 //Set the rows state for the Main Table
 useEffect(() => {
   function SetMainTableRowsData() {
-    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"Grade":row.Grade,"Battery":row.Battery,"AVGCost":row.AVGCost,"Colour":row.Colour,"AVGPriceTier":row.AVGPriceTier,"BXT_Lowest_Price":row.BXT_Lowest_Price}))
+    const rows = availData.map((row,index)=>({"id": index,"SKU":row.SKU,"Name":row.Name,"AvailableCage":row.AvailableCage,"AvailableRefurbCage":row.AvailableRefurbCage,"IDDear":row.IDDear,"DealerPrice":row.DealerPrice,"TotalQTY":row.TotalQTY,"FinalModel":row.FinalModel,"AVGCost":row.AVGCost,"Colour":row.Colour,"AVGPriceTier":row.AVGPriceTier}))
     SetMainTableRows(rows)
     console.log(rows)
   }
@@ -175,15 +175,12 @@ const columns = [
   { field: 'SKU', headerName: 'SKU', width: 70, disableColumnMenu: true, sortable: false, headerClassName: "bg-white text-black", cellClassName: "text-black",headerAlign: 'center',align: "center", renderCell:rowData=><Link href={`https://inventory.dearsystems.com/Product#${rowData.row.IDDear}`} target="_blank">{rowData.row.SKU}</Link>},
   { field: 'FinalModel', headerName: 'Model 📱', width: 350, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true},
   { field: 'Colour', headerName: 'Colour', width: 130, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
-  { field: 'Grade', headerName: 'Grade', width: 60, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
-  { field: 'Battery', headerName: 'Battery', width: 70, headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,headerAlign: 'center',align: "center"},
   { field: 'AvailableCage', headerName: 'Dealer Cage', type: 'number', width: 100,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'AvailableRefurbCage', headerName: 'Refurb Cage', type: 'number', width: 100,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black",disableColumnMenu: true, cellClassName: (params) => {if (params.value == null) {return '';} return clsx('super-app', {negative: params.value === 0, positive: params.value > 0,})}},
   { field: 'DealerPrice', headerName: 'Price (ex)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'AVGCost', headerName: 'AVG-c (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'AVGPriceTier', headerName: 'AVG (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
   { field: 'Margin', headerName: 'Margin (%)', type: 'number', width: 90,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true,valueGetter:getMainTableMargin},
-  { field: 'BXT_Lowest_Price', headerName: 'BXT (ex)', type: 'number', width: 80,headerAlign: 'center',align: "center", headerClassName: "bg-white text-black", cellClassName: "text-black",disableColumnMenu: true, valueFormatter: currencyFormatter},
 ];
 
 //Setup the columns for Selected Table
@@ -408,7 +405,7 @@ const getTogglableColumns = (columns) => {
     <div style={{ height: "100%", width: `${TableSizing.MainTableSize}`, float: "left"}} className='flexParent pr-4'>
 
     <div style={{width: "100%", float: "left"}} className="bg-white mb-2 h-7 rounded text-gray-600 border border-gray-300 text-center text-lg shadow-md font-semibold">
-        All Devices
+        All Parts
       </div>
       
       <DataGrid
