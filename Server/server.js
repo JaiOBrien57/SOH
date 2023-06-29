@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 const fetch = require("node-fetch");
 var bodyParser = require("body-parser");
+const axios = require('axios');
 
 //Setting up the app background vars
 app.use(cors());
@@ -24,6 +25,10 @@ const client = new Client({
 
 client.connect()
 
+const headers = {
+  'auth': 'Jindalee1!'
+}
+
 //Setup the Dear API
 const dearHeaders = {
   'Content-Type': 'application/json',
@@ -34,155 +39,54 @@ const SaleURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale"
 const SaleOrderURL = "https://inventory.dearsystems.com/ExternalApi/v2/sale/order"
 
 
-//Recieve parts list
-app.get("/api/allparts", (req, res) => {
-  async function getAvailList(){
-  try{
-    //Get the avail list
-      const availRequest = await fetch("https://api.renewablemobile.com.au/dear/productavailability?fields=ID,SKU,Name,Available,Location,Bin&Name=LIKE(Renewed)&includeproduct=true",{method: "GET", headers: {"auth":"Jindalee1!"}})
-      const availResponse = await availRequest.json()
+app.get('/api/allparts', async function(req, res, next) {
 
-    //Loop through to get the list formatted for Dealer Cage and Refurb Cage QTY
-    //Get the unique array from avail SKU'S
-    var availUnique = []
-    var cacheArray = []
-    availResponse.Items.forEach(element => {
-      var SKU = element.SKU
-      var Name = element.Name
-      var IDDear = element.ID
-      var PriceTier1 = element.Product.PriceTier1
-      var Brand = element.Product.AdditionalAttribute1
-      var Model = element.Product.AdditionalAttribute2
-      var AVGCost = element.Product.AverageCost
-      var PriceTierAVGCost = element.Product.PriceTier6
-      if (Model == null || Model == "") {
-        Model="UNKOWN"
-      }
-      var GB = element.Product.AdditionalAttribute3
-      var Colour = element.Product.AdditionalAttribute4
-      var Connectivity = element.Product.AdditionalAttribute5
-      var Battery = element.Product.AdditionalAttribute6
-      var Grade = element.Product.AdditionalAttribute7
-    
-      if (Model.includes("iPad")) {
-        var FinalModel = Brand+" "+Model+" "+GB+" "+Connectivity
-      }if (!Model.includes("iPad")) {
-        var FinalModel = Brand+" "+Model+" "+GB
-      }
+  const url = 'https://api.renewablemobile.com.au/dear/product?fields=SKU,Name,ID,AdditionalAttribute1,AdditionalAttribute2,AdditionalAttribute4,AdditionalAttribute5,AdditionalAttribute6,AdditionalAttribute7,PriceTier1,AverageCost,PriceTier6&AdditionalAttribute6=EXACT(Part)&includeavailability=true'
 
-      if (Battery == "New Battery") {
-        Battery = "100%"
-      }
+  axios.get(url, {headers})
+    .then(response => {
+      const responseData = response.data;
+      availUnique = []
+      cacheArray = []
 
-    
-      if(!cacheArray.includes(SKU) && Name.includes("Renewed")){
-        cacheArray.push(SKU)
-        availUnique.push({"SKU":SKU,"Name":Name,"ID":IDDear,"DealerPrice":PriceTier1,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":PriceTierAVGCost})
-      }
+      responseData.Items.forEach(element => {
+        var FinalModel = element.AdditionalAttribute1 + " " + element.AdditionalAttribute2 + " " + element.AdditionalAttribute7
+        var CageQTY = 0
+        var RefurbCageTwoQTY = 0
+        var TotalQTY = 0
+        var AvailableQTYBulk = parseInt(element.Availability.Available)
+        var LocationBulk = element.Availability.Location
+        var BinBulk = element.Availability.Bin
 
-    })
-
-    //Sum the unique against full array
-    var availFormatted = []
-    availUnique.forEach(element => {
-      var SKU = element.SKU
-      var Name = element.Name
-      var IDDear = element.ID
-      var CageQTY = 0
-      var RefurbCageTwoQTY = 0
-      var TotalQTY = 0
-      var DealerPrice = element.DealerPrice
-      var FinalModel = element.FinalModel
-      var Grade = element.Grade
-      var Battery = element.Battery
-      var AVGCost = element.AVGCost
-      var Colour = element.Colour
-      var PriceTierAVGCost = element.AVGPriceTier
-
-      availResponse.Items.forEach(elementTwo => {
-        var SKUBulk = elementTwo.SKU
-        var AvailableQTYBulk = parseInt(elementTwo.Available)
-        var LocationBulk = elementTwo.Location
-        var BinBulk = elementTwo.Bin
-        
-        if(SKU == SKUBulk && LocationBulk == "BNE - Main Warehouse" && BinBulk == "Cage" && AvailableQTYBulk > 0){
-          CageQTY = CageQTY+AvailableQTYBulk
+        if(LocationBulk == "BNE - Main Warehouse" && BinBulk == "Cage" && AvailableQTYBulk > 0){
+          CageQTY = CageQTY + AvailableQTYBulk
+        } else if(LocationBulk == "BNE - CAGE - Refurb 2 (106.2)" && BinBulk == "Cage" && AvailableQTYBulk > 0){
+          RefurbCageTwoQTY = RefurbCageTwoQTY + AvailableQTYBulk
         }
 
-        if(SKU == SKUBulk && LocationBulk == "BNE - CAGE - Refurb 2 (106.2)" && AvailableQTYBulk > 0){
-          RefurbCageTwoQTY = RefurbCageTwoQTY+AvailableQTYBulk
-        } 
+        TotalQTY = CageQTY + RefurbCageTwoQTY
 
-      })
-
-      TotalQTY = CageQTY+RefurbCageTwoQTY
-
-      if(CageQTY != "" || RefurbCageTwoQTY != ""){
-        availFormatted.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":CageQTY,"AvailableRefurbCage":RefurbCageTwoQTY,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":PriceTierAVGCost})
-      }
-
-    });
-
-    //Sort the array by name
-    availFormatted.sort((a,b)=>{if (a.FinalModel < b.FinalModel) {
-      return -1;
-    }
-    if (a.FinalModel > b.FinalModel) {
-      return 1;
-    }
-    return 0;})
-
-    //Query the SQL Database
-    const SQLRes = await client.query(`SELECT * FROM public."SOH_Pricing_Management" ORDER BY "Model" ASC `)
-    const SQLRows = await SQLRes.rows
-
-    const FinalArrayWithSQLData = []
-    availFormatted.forEach((row)=>{
-      const IDDear = row.IDDear
-      const SKU = row.SKU
-      const Name = row.Name
-      const AvailableCage = row.AvailableCage
-      const AvailableRefurbCage = row.AvailableRefurbCage
-      const DealerPrice = row.DealerPrice
-      const TotalQTY = row.TotalQTY
-      const FinalModel = row.FinalModel
-      const Grade = row.Grade
-      const Battery = row.Battery
-      const AVGCost = row.AVGCost
-      const Colour = row.Colour
-      const AVGPriceTier = row.AVGPriceTier
-      let Checker = false
-      let BXT_Lowest_Price = ""
-
-      SQLRows.forEach((rowSQL)=>{
-        const ModelSQL = rowSQL.Model
-        const BXTLowestSQL = rowSQL.BXT_Lowest_Price
-
-        if(Checker === false && ModelSQL === FinalModel){
-          BXT_Lowest_Price = BXTLowestSQL
-          Checker = true
+        if(!cacheArray.includes(element.SKU)) {
+          cacheArray.push(element.SKU)
+          availUnique.push({"SKU": element.SKU, "Name": element.Name, "ID": element.ID, "AvailableCage": CageQTY, "AvailableRefurbCage": RefurbCageTwoQTY, "DealerPrice": element.PriceTier1, "TotalQTY": TotalQTY, "FinalModel": FinalModel, "Grade": element.AdditionalAttribute5, "Battery": element.AdditionalAttribute6, "AVGCost": element.AverageCost, "Colour": element.AdditionalAttribute4, "AVGPriceTier": element.PriceTier6, "BXT_Lowest_Price": 0})
         }
+
+        availUnique.sort((a,b)=>{if (a.FinalModel < b.FinalModel) {
+          return -1;
+        }
+        if (a.FinalModel > b.FinalModel) {
+          return 1;
+        }
+        return 0;})
+
       })
-
-      //Run the for each for the extra Bulk Trader Price Tier ***Check Email
-      if(AVGCost/DealerPrice < 40)
-
-      FinalArrayWithSQLData.push({"IDDear":IDDear,"SKU":SKU,"Name":Name,"AvailableCage":AvailableCage,"AvailableRefurbCage":AvailableRefurbCage,"DealerPrice":DealerPrice,"TotalQTY":TotalQTY,"FinalModel":FinalModel,"Grade":Grade,"Battery":Battery,"AVGCost":AVGCost,"Colour":Colour,"AVGPriceTier":AVGPriceTier,"BXT_Lowest_Price":BXT_Lowest_Price})
-
+      res.json(availUnique);
     })
-
-
-
-    //Sending results back
-      res.json(FinalArrayWithSQLData).status(200)
-      console.log("Renewed Devices Avail List has Been Fetched and Formatted")
-    }catch(error){
-      res.json("ERROR").status(500)
-      console.log("Avail list fetch fail:",error)
-    }
-  }
-  getAvailList()
-});
+    .catch(error => {
+      console.error('Error', error.message);
+      res.status(500).json({error: 'Internal Server Error'})
+    })
+})
 
 //Receive avail list
 app.get("/api/renewedDevicesList", (req, res) => {
